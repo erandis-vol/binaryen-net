@@ -1,2 +1,2 @@
-# binaryen-net
+# binaryen.NET
 .NET binding of binaryen
