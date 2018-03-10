@@ -18,12 +18,24 @@ namespace Binaryen.Tests
         public void TestCreateAndDispose()
         {
             var module = new Module();
-            Assert.AreNotEqual(module.Handle, IntPtr.Zero);
-            TestContext.WriteLine("Module.Handle = ${0:X}", module.Handle);
+            Assert.AreNotEqual(IntPtr.Zero, module.Handle);
 
             module.Dispose();
-            Assert.AreEqual(module.Handle, IntPtr.Zero);
-            TestContext.WriteLine("Module.Handle = ${0:X}", module.Handle);
+            Assert.AreEqual(IntPtr.Zero, module.Handle);
+        }
+
+        [TestMethod]
+        public void TestAddFunctionType()
+        {
+            using (var module = new Module())
+            {
+                var signature = module.AddFunctionType("testMethod", Type.Int32, new[] { Type.Float32, Type.Int64 });
+
+                Assert.AreEqual("testMethod", signature.Name);
+                Assert.AreEqual(2u, signature.ParameterCount);
+                Assert.AreEqual(Type.Float32, signature[0]);
+                Assert.AreEqual(Type.Int64, signature[1]);
+            }
         }
     }
 }
