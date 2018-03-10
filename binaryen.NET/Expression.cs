@@ -1,14 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Binaryen
 {
-    using ExpressionRef = IntPtr;
-
     /// <summary>
     /// Represents the ID (kind) of an expression.
     /// </summary>
@@ -46,13 +40,13 @@ namespace Binaryen
 
     public class Expression
     {
-        private ExpressionRef handle;
+        private IntPtr handle;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Expression"/> class with the specified handle.
         /// </summary>
         /// <param name="handle">The handle.</param>
-        internal Expression(ExpressionRef handle)
+        internal Expression(IntPtr handle)
         {
             this.handle = handle;
         }
@@ -76,14 +70,56 @@ namespace Binaryen
         public Type Type => BinaryenExpressionGetType(handle);
 
         /// <summary>
-        /// Gets the name of the expression.
+        /// Gets information about the expression.
         /// </summary>
-        public virtual string Name => string.Empty;
+        public ExpressionInfo Info
+        {
+            get
+            {
+                var id = BinaryenExpressionGetId(handle);
+                var type = BinaryenExpressionGetType(handle);
+                
+                switch (id)
+                {
+                    case ExpressionId.Block:
+                        {
+                            var count = BinaryenBlockGetNumChildren(handle);
+                            var children = new Expression[count];
+
+                            for (uint i = 0; i < count; i++)
+                                children[i] = new Expression(BinaryenBlockGetChild(handle, i));
+
+                            return new BlockInfo(BinaryenBlockGetName(handle), children, type);
+                        }
+
+                    case ExpressionId.If:
+                        return new IfInfo(
+                            new Expression(BinaryenIfGetCondition(handle)),
+                            new Expression(BinaryenIfGetIfTrue(handle)),
+                            new Expression(BinaryenIfGetIfFalse(handle)),
+                            type
+                        );
+
+                    // TODO
+
+                    case ExpressionId.Nop:
+                        return new NopInfo(type);
+
+                    case ExpressionId.Unary:
+                        return new UnreachableInfo(type);
+
+                    // TODO
+
+                    default:
+                        throw new NotSupportedException($"Unexpected function ID: {id}");
+                }
+            }
+        }
 
         /// <summary>
         /// Gets the handle of the expression.
         /// </summary>
-        internal ExpressionRef Handle => handle;
+        internal IntPtr Handle => handle;
 
         #region Imports
 
@@ -95,6 +131,28 @@ namespace Binaryen
 
         [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl)]
         private static extern void BinaryenExpressionPrint(IntPtr expr);
+
+        // Block
+
+        [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        private static extern string BinaryenBlockGetName(IntPtr expr);
+
+        [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl)]
+        private static extern uint BinaryenBlockGetNumChildren(IntPtr expr);
+
+        [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr BinaryenBlockGetChild(IntPtr expr, uint index);
+
+        // If
+
+        [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr BinaryenIfGetCondition(IntPtr expr);
+
+        [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr BinaryenIfGetIfTrue(IntPtr expr);
+
+        [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr BinaryenIfGetIfFalse(IntPtr expr);
 
         #endregion
     }

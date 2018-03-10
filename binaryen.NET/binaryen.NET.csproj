@@ -42,6 +42,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Expression.cs" />
+    <Compile Include="ExpressionInfo.cs" />
     <Compile Include="Literal.cs" />
     <Compile Include="Module.cs" />
     <Compile Include="Operator.cs" />
