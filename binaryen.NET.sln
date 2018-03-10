@@ -5,6 +5,8 @@ VisualStudioVersion = 15.0.27428.2002
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "binaryen.NET", "binaryen.NET\binaryen.NET.csproj", "{549C74A8-4599-4FEE-B3D4-4BE49E1D4C5A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "binaryen.NET.Tests", "binaryen.NET.Tests\binaryen.NET.Tests.csproj", "{2B136573-310B-48E5-AF7C-DD13B7C1C1FF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{549C74A8-4599-4FEE-B3D4-4BE49E1D4C5A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{549C74A8-4599-4FEE-B3D4-4BE49E1D4C5A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{549C74A8-4599-4FEE-B3D4-4BE49E1D4C5A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2B136573-310B-48E5-AF7C-DD13B7C1C1FF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2B136573-310B-48E5-AF7C-DD13B7C1C1FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2B136573-310B-48E5-AF7C-DD13B7C1C1FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2B136573-310B-48E5-AF7C-DD13B7C1C1FF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
