@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 
 namespace Binaryen
 {
-    public enum Type : uint
+    public enum Type : int
     {
         /// <summary>
         /// No type.
@@ -38,6 +38,6 @@ namespace Binaryen
         /// <summary>
         /// Special type. Used by blocks to automatically determine their type.
         /// </summary>
-        Auto        = 0xFFFF_FFFFu,
+        Auto        = -1,
     }
 }
