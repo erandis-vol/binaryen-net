@@ -32,6 +32,8 @@ namespace Binaryen
             }
         }
 
+        public IntPtr Handle => handle;
+
         #region Imports
 
         [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl)]
