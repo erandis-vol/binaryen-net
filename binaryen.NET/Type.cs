@@ -3,57 +3,41 @@ using System.Runtime.InteropServices;
 
 namespace Binaryen
 {
-    public static class Type
+    public enum Type : uint
     {
-        /// <summary>No type.</summary>
-        public static readonly uint None;
-        /// <summary>32-bit integer.</summary>
-        public static readonly uint Int32;
-        /// <summary>64-bit integer.</summary>
-        public static readonly uint Int64;
-        /// <summary>32-bit floating point number.</summary>
-        public static readonly uint Float32;
-        /// <summary>64-bit floating point number.</summary>
-        public static readonly uint Float64;
-        /// <summary>Special type. Used to indicate unreachable code.</summary>
-        public static readonly uint Unreachable;
-        /// <summary>Special type. Used as the type of a block to allow the API determine it automatically.</summary>
-        public static readonly uint Auto;
+        /// <summary>
+        /// No type.
+        /// </summary>
+        None        = 0,
+        
+        /// <summary>
+        /// 32-bit integer type.
+        /// </summary>
+        Int32       = 1,
+        
+        /// <summary>
+        /// 64-bit integer type.
+        /// </summary>
+        Int64       = 2,
 
-        static Type()
-        {
-            None = BinaryenTypeNone();
-            Int32 = BinaryenTypeInt32();
-            Int64 = BinaryenTypeInt64();
-            Float32 = BinaryenTypeFloat32();
-            Float64 = BinaryenTypeFloat64();
-            Unreachable = BinaryenTypeUnreachable();
-            Auto = BinaryenTypeAuto();
-        }
+        /// <summary>
+        /// 32-bit floating point number type.
+        /// </summary>
+        Float32     = 3,
 
-        #region Imports
+        /// <summary>
+        /// 64-bit floating point number type.
+        /// </summary>
+        Float64     = 4,
 
-        [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl)]
-        private static extern uint BinaryenTypeNone();
+        /// <summary>
+        /// Special type. Used to indicate unreachable code.
+        /// </summary>
+        Unreachable = 5,
 
-        [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl)]
-        private static extern uint BinaryenTypeInt32();
-
-        [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl)]
-        private static extern uint BinaryenTypeInt64();
-
-        [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl)]
-        private static extern uint BinaryenTypeFloat32();
-
-        [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl)]
-        private static extern uint BinaryenTypeFloat64();
-
-        [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl)]
-        private static extern uint BinaryenTypeUnreachable();
-
-        [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl)]
-        private static extern uint BinaryenTypeAuto();
-
-        #endregion
+        /// <summary>
+        /// Special type. Used by blocks to automatically determine their type.
+        /// </summary>
+        Auto        = 0xFFFF_FFFFu,
     }
 }
