@@ -226,17 +226,17 @@ namespace Binaryen
             return new Expression(expr);
         }
 
-        public Expression Load(uint bytes, sbyte signed, uint offset, Type type, Expression ptr)
+        public Expression Load(uint bytes, bool signed, uint offset, Type type, Expression ptr)
         {
             return Load(bytes, signed, offset, 0, type, ptr);
         }
 
-        public Expression Load(uint bytes, sbyte signed, uint offset, uint align, Type type, Expression ptr)
+        public Expression Load(uint bytes, bool signed, uint offset, uint align, Type type, Expression ptr)
         {
             if (ptr == null)
                 throw new ArgumentNullException(nameof(ptr));
 
-            var load = BinaryenLoad(handle, bytes, signed, offset, align, type, ptr.Handle);
+            var load = BinaryenLoad(handle, bytes, (sbyte)(signed ? 1 : 0), offset, align, type, ptr.Handle);
             if (load == IntPtr.Zero)
                 throw new OutOfMemoryException();
 
