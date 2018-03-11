@@ -43,6 +43,17 @@ namespace Binaryen
             }
         }
 
+        /// <summary>
+        /// Prints the module to STDOUT. Useful for debugging.
+        /// </summary>
+        public void Print()
+        {
+            if (handle != IntPtr.Zero)
+            {
+                BinaryenModulePrint(handle);
+            }
+        }
+
         public Signature AddFunctionType(string name, Type result, Type[] parameters)
         {
             var sig = BinaryenAddFunctionType(handle, name, result, parameters, (uint)parameters.Length);
@@ -65,13 +76,25 @@ namespace Binaryen
             return new Signature(sig);
         }
 
-        void AddFunction(string name, Signature signature, IEnumerable<Type> varTypes, Expression body)
+        public Function AddFunction(string name, Signature signature, Expression body)
+        {
+            var func = BinaryenAddFunction(handle, name, signature.Handle, null, 0u, body.Handle);
+            if (func == IntPtr.Zero)
+                throw new OutOfMemoryException();
+
+            return new Function(func);
+        }
+
+        public void AddFunction(string name, Signature signature, IEnumerable<Type> varTypes, Expression body)
         {
             AddFunction(name, signature, varTypes.ToArray(), body);
         }
 
-        Function AddFunction(string name, Signature signature, Type[] varTypes, Expression body)
+        public Function AddFunction(string name, Signature signature, Type[] varTypes, Expression body)
         {
+            if (varTypes == null)
+                throw new ArgumentNullException(nameof(varTypes));
+
             var func = BinaryenAddFunction(handle, name, signature.Handle, varTypes, (uint)varTypes.Length, body.Handle);
             if (func == IntPtr.Zero)
                 throw new OutOfMemoryException();
@@ -79,7 +102,7 @@ namespace Binaryen
             return new Function(func);
         }
 
-        Function GetFunction(string name)
+        public Function GetFunction(string name)
         {
             var ptr = BinaryenGetFunction(handle, name);
             if (ptr == IntPtr.Zero)
@@ -88,7 +111,7 @@ namespace Binaryen
                 return new Function(ptr);
         }
 
-        void RemoveFunction(string name)
+        public void RemoveFunction(string name)
         {
             BinaryenRemoveFunction(handle, name);
         }
@@ -532,6 +555,11 @@ namespace Binaryen
 
         [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr BinaryenGetFunctionTypeBySignature(IntPtr module, Type result, Type[] paramTypes, uint numParams);
+
+        // Operations
+
+        [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void BinaryenModulePrint(IntPtr module);
 
         // Expression creation
 
