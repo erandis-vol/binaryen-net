@@ -611,6 +611,24 @@
     }
 
     /// <summary>
+    /// Represents information about a no-operation (nop) <see cref="Expression"/>.
+    /// </summary>
+    public class NopInfo : ExpressionInfo
+    {
+        public NopInfo(Type type) : base(ExpressionId.Nop, type)
+        { }
+    }
+
+    /// <summary>
+    /// Represents information about an unreachable <see cref="Expression"/>.
+    /// </summary>
+    public class UnreachableInfo : ExpressionInfo
+    {
+        public UnreachableInfo(Type type) : base(ExpressionId.Unreachable, type)
+        { }
+    }
+
+    /// <summary>
     /// Represents information about an atomic read-modify-write (RMW) <see cref="Expression"/>.
     /// </summary>
     public class AtomicReadModifyWriteInfo : ExpressionInfo
@@ -759,23 +777,5 @@
         /// Gets the wake count expression.
         /// </summary>
         public Expression WakeCount => wakeCount;
-    }
-
-    /// <summary>
-    /// Represents information about a no-operation (nop) <see cref="Expression"/>.
-    /// </summary>
-    public class NopInfo : ExpressionInfo
-    {
-        public NopInfo(Type type) : base(ExpressionId.Nop, type)
-        { }
-    }
-
-    /// <summary>
-    /// Represents information about an unreachable <see cref="Expression"/>.
-    /// </summary>
-    public class UnreachableInfo : ExpressionInfo
-    {
-        public UnreachableInfo(Type type) : base(ExpressionId.Unreachable, type)
-        { }
     }
 }
