@@ -185,7 +185,7 @@ namespace Binaryen
         /// </summary>
         /// <param name="start">The start function.</param>
         /// <exception cref="ArgumentNullException"><paramref name="start"/> is null.</exception>
-        void SetStart(Function start)
+        public void SetStart(Function start)
         {
             if (start == null)
                 throw new ArgumentNullException(nameof(start));
