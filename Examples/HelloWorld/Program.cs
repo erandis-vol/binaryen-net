@@ -28,6 +28,18 @@ namespace HelloWorld
 
                 // The module is disposed, along with every object that it owns
             }
+
+            // Expected output:
+            //
+            // (module
+            //  (type $iii (func (param i32 i32) (result i32)))
+            //  (func $adder (; 0 ;) (type $iii) (param $0 i32) (param $1 i32) (result i32)
+            //   (i32.add
+            //    (get_local $0)
+            //    (get_local $1)
+            //   )
+            //  )
+            // )
         }
     }
 }
