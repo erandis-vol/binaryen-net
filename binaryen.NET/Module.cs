@@ -65,6 +65,46 @@ namespace Binaryen
             return new Signature(sig);
         }
 
+        void AddFunction(string name, Signature signature, IEnumerable<Type> varTypes, Expression body)
+        {
+            AddFunction(name, signature, varTypes.ToArray(), body);
+        }
+
+        Function AddFunction(string name, Signature signature, Type[] varTypes, Expression body)
+        {
+            var func = BinaryenAddFunction(handle, name, signature.Handle, varTypes, (uint)varTypes.Length, body.Handle);
+            if (func == IntPtr.Zero)
+                throw new OutOfMemoryException();
+
+            return new Function(func);
+        }
+
+        Function GetFunction(string name)
+        {
+            var ptr = BinaryenGetFunction(handle, name);
+            if (ptr == IntPtr.Zero)
+                return null;
+            else
+                return new Function(ptr);
+        }
+
+        void RemoveFunction(string name)
+        {
+            BinaryenRemoveFunction(handle, name);
+        }
+
+        /// <summary>
+        /// Sets the start function for the module. There can only be one.
+        /// </summary>
+        /// <param name="start">The start function.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="start"/> is null.</exception>
+        void SetStart(Function start)
+        {
+            if (start == null)
+                throw new ArgumentNullException(nameof(start));
+
+            BinaryenSetStart(handle, start.Handle);
+        }
 
         public Expression Block(string name, IEnumerable<Expression> children, Type type = Type.None)
         {
@@ -584,6 +624,22 @@ namespace Binaryen
 
         [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr BinaryenAtomicWake(IntPtr module, IntPtr ptr, IntPtr wakeCount);
+
+        // Functions
+
+        [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        private static extern IntPtr BinaryenAddFunction(IntPtr module, string name, IntPtr type, Type[] varTypes, uint numVarTypes, IntPtr body);
+
+        [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        private static extern IntPtr BinaryenGetFunction(IntPtr module, string name);
+
+        [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        private static extern void BinaryenRemoveFunction(IntPtr module, string name);
+
+        // Start function
+
+        [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void BinaryenSetStart(IntPtr module, IntPtr start);
 
         #endregion
     }
