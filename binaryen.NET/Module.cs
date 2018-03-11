@@ -5,6 +5,18 @@ using System.Runtime.InteropServices;
 
 namespace Binaryen
 {
+    /// <summary>Represents a module.</summary>
+    /// <remarks>
+    /// Modules contain lists of functions, imports, exports and types. The Add* methods create them on the module.
+    /// The module owns them and will free their memory when disposed of.
+    /// 
+    /// Expressions are also allocated within and freed by modules. They are not created by Add* methods,
+    /// since they are not added directly to the module, instead, they are arguments to other expressions
+    /// (and then they are the children of that AST node), or to a function
+    /// (and then they are the body of that function).
+    /// 
+    /// A module can also contain a function table for indirect calls, a memory, and a start method.
+    /// </remarks>
     public class Module : IDisposable
     {
         private IntPtr handle;
@@ -54,26 +66,78 @@ namespace Binaryen
             }
         }
 
+        /// <summary>
+        /// Adds a new function type.
+        /// </summary>
+        /// <param name="name">The name of the type.</param>
+        /// <param name="result">The return type.</param>
+        /// <returns>A <see cref="Signature"/> representing the function type.</returns>
+        /// <exception cref="OutOfMemoryException">the type could not be created.</exception>
+        public Signature AddFunctionType(string name, Type result)
+        {
+            return AddFunctionType(name, result, null);
+        }
+
+        /// <summary>
+        /// Adds a new function type.
+        /// </summary>
+        /// <param name="name">The name of the type.</param>
+        /// <param name="result">The return type.</param>
+        /// <param name="parameters">The parameter types.</param>
+        /// <returns>A <see cref="Signature"/> representing the function type.</returns>
+        /// <exception cref="OutOfMemoryException">the type could not be created.</exception>
+        public Signature AddFunctionType(string name, Type result, IEnumerable<Type> parameters)
+        {
+            if (parameters.Any())
+            {
+                return AddFunctionType(name, result, parameters.ToArray());
+            }
+            else
+            {
+                return AddFunctionType(name, result, null);
+            }
+        }
+
+        /// <summary>
+        /// Adds a new function type.
+        /// </summary>
+        /// <param name="name">The name of the type.</param>
+        /// <param name="result">The return type.</param>
+        /// <param name="parameters">The parameter types.</param>
+        /// <returns>A <see cref="Signature"/> representing the function type.</returns>
+        /// <exception cref="OutOfMemoryException">the type could not be created.</exception>
         public Signature AddFunctionType(string name, Type result, Type[] parameters)
         {
-            var sig = BinaryenAddFunctionType(handle, name, result, parameters, (uint)parameters.Length);
-            if (sig == IntPtr.Zero)
+            IntPtr signatureRef;
+
+            if (parameters == null)
+            {
+                signatureRef = BinaryenAddFunctionType(handle, name, result, null, 0u);
+            }
+            else
+            {
+                signatureRef = BinaryenAddFunctionType(handle, name, result, parameters, (uint)parameters.Length);
+            }
+
+            if (signatureRef == IntPtr.Zero)
             {
                 throw new OutOfMemoryException();
             }
 
-            return new Signature(sig);
+            return new Signature(signatureRef);
         }
 
+        /// <summary>
+        /// Returns an existing function type by its parametric signature.
+        /// </summary>
+        /// <param name="result"></param>
+        /// <param name="parameters"></param>
+        /// <returns>A <see cref="Signature"/> representing the function type.
+        /// If there is no such type, returns <c>null</c>.</returns>
         public Signature GetFunctionTypeBySignature(Type result, Type[] parameters)
         {
             var sig = BinaryenGetFunctionTypeBySignature(handle, result, parameters, (uint)parameters.Length);
-            if (sig == IntPtr.Zero)
-            {
-                return null;
-            }
-
-            return new Signature(sig);
+            return sig == IntPtr.Zero ? null : new Signature(sig);
         }
 
         public Function AddFunction(string name, Signature signature, Expression body)
