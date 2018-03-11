@@ -7,15 +7,19 @@ namespace Binaryen
 {
     /// <summary>Represents a module.</summary>
     /// <remarks>
-    /// Modules contain lists of functions, imports, exports and types. The Add* methods create them on the module.
-    /// The module owns them and will free their memory when disposed of.
+    /// <para>
+    ///     Modules contain lists of functions, imports, exports and types. The Add* methods create them on the module.
+    ///     The module owns them and will free their memory when disposed of.
+    /// </para>
     /// 
-    /// Expressions are also allocated within and freed by modules. They are not created by Add* methods,
-    /// since they are not added directly to the module, instead, they are arguments to other expressions
-    /// (and then they are the children of that AST node), or to a function
-    /// (and then they are the body of that function).
+    /// <para>
+    ///     Expressions are also allocated within and freed by modules. They are not created by Add* methods,
+    ///     since they are not added directly to the module, instead, they are arguments to other expressions
+    ///     (and then they are the children of that AST node), or to a function
+    ///     (and then they are the body of that function).
+    /// </para>
     /// 
-    /// A module can also contain a function table for indirect calls, a memory, and a start method.
+    /// <para>A module can also contain a function table for indirect calls, a memory, and a start method.</para>
     /// </remarks>
     public class Module : IDisposable
     {
@@ -242,15 +246,33 @@ namespace Binaryen
             BinaryenSetStart(handle, start.Handle);
         }
 
-        public Expression Block(string name, IEnumerable<Expression> children, Type type = Type.None)
+        /// <summary>
+        /// Creates a block <see cref="Expression"/>.
+        /// </summary>
+        /// <param name="label">The block label. Can be <c>null</c>.</param>
+        /// <param name="children">The block body.</param>
+        /// <param name="type">The result type. If set to <see cref="Type.Auto"/>, it will be determined automatically.</param>
+        /// <returns>An <see cref="Expression"/> instance.</returns>
+        /// <exception cref="OutOfMemoryException">the expression could not be created.</exception>
+        public Expression Block(string label, IEnumerable<Expression> children, Type type = Type.None)
         {
-            var childrenHandles = children.Select(x => x.Handle).ToArray();
+            IntPtr blockRef;
 
-            var expr = BinaryenBlock(handle, name, childrenHandles, (uint)childrenHandles.Length, type);
-            if (expr == IntPtr.Zero)
+            if (children != null && children.Any())
+            {
+                var childrenHandles = children.Select(x => x.Handle).ToArray();
+
+                blockRef = BinaryenBlock(handle, label, childrenHandles, (uint)childrenHandles.Length, type);
+            }
+            else
+            {
+                blockRef = BinaryenBlock(handle, label, null, 0u, type);
+            }
+
+            if (blockRef == IntPtr.Zero)
                 throw new OutOfMemoryException();
 
-            return new Expression(expr);
+            return new Expression(blockRef);
         }
 
         public Expression If(Expression condition, Expression ifTrue, Expression ifFalse = null)
@@ -272,6 +294,14 @@ namespace Binaryen
             return new Expression(@if);
         }
 
+        /// <summary>
+        /// Creates a loop <see cref="Expression"/>.
+        /// </summary>
+        /// <param name="label">The loop label. Can be <c>null</c>.</param>
+        /// <param name="body">The loop body.</param>
+        /// <returns>An <see cref="Expression"/> instance.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="body"/> is null.</exception>
+        /// <exception cref="OutOfMemoryException">the expression could not be created.</exception>
         public Expression Loop(string label, Expression body)
         {
             if (body == null)
@@ -345,6 +375,13 @@ namespace Binaryen
             return new Expression(call);
         }
 
+        /// <summary>
+        /// Creates a get_local <see cref="Expression"/>. The type must be specified as the local may not have been declared yet.
+        /// </summary>
+        /// <param name="index">The local index.</param>
+        /// <param name="type">The type of the local.</param>
+        /// <returns>An <see cref="Expression"/> instance.</returns>
+        /// <exception cref="OutOfMemoryException">the expression could not be created.</exception>
         public Expression GetLocal(uint index, Type type)
         {
             var expr = BinaryenGetLocal(handle, index, type);
@@ -354,6 +391,14 @@ namespace Binaryen
             return new Expression(expr);
         }
 
+        /// <summary>
+        /// Creates a set_local <see cref="Expression"/> with the specified value.
+        /// </summary>
+        /// <param name="index">The local index.</param>
+        /// <param name="value">The value to set.</param>
+        /// <returns>An <see cref="Expression"/> instance.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="value"/> is null.</exception>
+        /// <exception cref="OutOfMemoryException">the expression could not be created.</exception>
         public Expression SetLocal(uint index, Expression value)
         {
             if (value == null)

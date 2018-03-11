@@ -1,8 +1,8 @@
-﻿using System;
-using System.Runtime.InteropServices;
-
-namespace Binaryen
+﻿namespace Binaryen
 {
+    /// <summary>
+    /// Represents a value type.
+    /// </summary>
     public enum Type : int
     {
         /// <summary>
