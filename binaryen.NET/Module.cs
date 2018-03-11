@@ -140,32 +140,77 @@ namespace Binaryen
             return sig == IntPtr.Zero ? null : new Signature(sig);
         }
 
+        /// <summary>
+        /// Adds a new function.
+        /// </summary>
+        /// <param name="name">The name of the function.</param>
+        /// <param name="signature">The parametric signature of the function.</param>
+        /// <param name="body">The function body.</param>
+        /// <returns>A <see cref="Function"/> instance.</returns>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"><paramref name="signature"/> or <paramref name="body"/> is null.</exception>
         public Function AddFunction(string name, Signature signature, Expression body)
         {
-            var func = BinaryenAddFunction(handle, name, signature.Handle, null, 0u, body.Handle);
-            if (func == IntPtr.Zero)
-                throw new OutOfMemoryException();
-
-            return new Function(func);
+            return AddFunction(name, signature, null, body);
         }
 
-        public void AddFunction(string name, Signature signature, IEnumerable<Type> varTypes, Expression body)
+        /// <summary>
+        /// Adds a new function.
+        /// </summary>
+        /// <param name="name">The name of the function.</param>
+        /// <param name="signature">The parametric signature of the function.</param>
+        /// <param name="varTypes">Additional local variable types, specified in order.</param>
+        /// <param name="body">The function body.</param>
+        /// <returns>A <see cref="Function"/> instance.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="signature"/> or <paramref name="body"/> is null.</exception>
+        public Function AddFunction(string name, Signature signature, IEnumerable<Type> varTypes, Expression body)
         {
-            AddFunction(name, signature, varTypes.ToArray(), body);
+            if (varTypes.Any())
+            {
+                return AddFunction(name, signature, varTypes.ToArray(), body);
+            }
+            else
+            {
+                return AddFunction(name, signature, null, body);
+            }
         }
 
+        /// <summary>
+        /// Adds a new function.
+        /// </summary>
+        /// <param name="name">The name of the function.</param>
+        /// <param name="signature">The parametric signature of the function.</param>
+        /// <param name="varTypes">Additional local variable types, specified in order.</param>
+        /// <param name="body">The function body.</param>
+        /// <returns>A <see cref="Function"/> instance.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="signature"/> or <paramref name="body"/> is null.</exception>
         public Function AddFunction(string name, Signature signature, Type[] varTypes, Expression body)
         {
-            if (varTypes == null)
-                throw new ArgumentNullException(nameof(varTypes));
+            if (signature == null || body == null)
+                throw new ArgumentNullException(signature == null ? nameof(signature) : nameof(body));
 
-            var func = BinaryenAddFunction(handle, name, signature.Handle, varTypes, (uint)varTypes.Length, body.Handle);
-            if (func == IntPtr.Zero)
+            IntPtr funcRef;
+
+            if (varTypes == null)
+            {
+                funcRef = BinaryenAddFunction(handle, name, signature.Handle, null, 0u, body.Handle);
+            }
+            else
+            {
+                funcRef = BinaryenAddFunction(handle, name, signature.Handle, varTypes, (uint)varTypes.Length, body.Handle);
+            }
+
+            if (funcRef == IntPtr.Zero)
                 throw new OutOfMemoryException();
 
-            return new Function(func);
+            return new Function(funcRef);
         }
 
+        /// <summary>
+        /// Returns the function with the specified name.
+        /// </summary>
+        /// <param name="name">The name of the function.</param>
+        /// <returns>A <see cref="Function"/> instance. If there is not such function, returns <c>null</c>.</returns>
         public Function GetFunction(string name)
         {
             var ptr = BinaryenGetFunction(handle, name);
@@ -175,6 +220,10 @@ namespace Binaryen
                 return new Function(ptr);
         }
 
+        /// <summary>
+        /// Removes the function with the specified name.
+        /// </summary>
+        /// <param name="name">The name of the function.</param>
         public void RemoveFunction(string name)
         {
             BinaryenRemoveFunction(handle, name);
