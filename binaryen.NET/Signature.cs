@@ -14,7 +14,7 @@ namespace Binaryen
         /// Initializes a new instance of the <see cref="Signature"/> class
         /// </summary>
         /// <param name="handle"></param>
-        internal Signature(IntPtr handle)
+        public Signature(IntPtr handle)
         {
             this.handle = handle;
         }

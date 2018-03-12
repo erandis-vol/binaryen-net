@@ -10,7 +10,7 @@ namespace Binaryen
     {
         private IntPtr handle;
 
-        internal Export(IntPtr handle)
+        public Export(IntPtr handle)
         {
             this.handle = handle;
         }

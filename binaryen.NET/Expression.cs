@@ -46,7 +46,7 @@ namespace Binaryen
         /// Initializes a new instance of the <see cref="Expression"/> class with the specified handle.
         /// </summary>
         /// <param name="handle">The handle.</param>
-        internal Expression(IntPtr handle)
+        public Expression(IntPtr handle)
         {
             this.handle = handle;
         }
