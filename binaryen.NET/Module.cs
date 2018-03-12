@@ -243,17 +243,7 @@ namespace Binaryen
         [Obsolete("Use AddFunctionImport instead.")]
         public Import AddImport(string name, string externalModuleName, string externalBaseName, Signature signature)
         {
-            if (name == null)
-                throw new ArgumentNullException(nameof(name));
-
-            if (signature == null)
-                throw new ArgumentNullException(nameof(signature));
-
-            var importRef = BinaryenAddImport(handle, name, externalModuleName, externalBaseName, signature.Handle);
-            if (importRef == IntPtr.Zero)
-                throw new OutOfMemoryException();
-
-            return new Import(importRef);
+            return AddFunctionImport(name, externalModuleName, externalBaseName, signature);
         }
 
         /// <summary>
@@ -965,8 +955,8 @@ namespace Binaryen
 
         // Imports
 
-        [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-        private static extern /*WASM_DEPRECATED*/ IntPtr BinaryenAddImport(IntPtr module, string internalName, string externalModuleName, string externalBaseName, IntPtr type);
+        //[DllImport("binaryen", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        //private static extern /*WASM_DEPRECATED*/ IntPtr BinaryenAddImport(IntPtr module, string internalName, string externalModuleName, string externalBaseName, IntPtr type);
 
         [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
         private static extern IntPtr BinaryenAddFunctionImport(IntPtr module, string internalName, string externalModuleName, string externalBaseName, IntPtr functionType);
