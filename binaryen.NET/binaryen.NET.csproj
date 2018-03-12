@@ -41,6 +41,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Export.cs" />
     <Compile Include="Expression.cs" />
     <Compile Include="ExpressionInfo.cs" />
     <Compile Include="ExternalType.cs" />

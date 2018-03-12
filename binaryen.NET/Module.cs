@@ -278,7 +278,7 @@ namespace Binaryen
         }
 
         /// <summary>
-        /// Adds the specified function import.
+        /// Adds the specified table import.
         /// </summary>
         /// <param name="name">The internal name.</param>
         /// <param name="externalModuleName">The external module name.</param>
@@ -305,7 +305,7 @@ namespace Binaryen
         }
 
         /// <summary>
-        /// Adds the specified function import.
+        /// Adds the specified memory import.
         /// </summary>
         /// <param name="name">The internal name.</param>
         /// <param name="externalModuleName">The external module name.</param>
@@ -332,7 +332,7 @@ namespace Binaryen
         }
 
         /// <summary>
-        /// Adds the specified function import.
+        /// Adds the specified global import.
         /// </summary>
         /// <param name="name">The internal name.</param>
         /// <param name="externalModuleName">The external module name.</param>
@@ -367,6 +367,109 @@ namespace Binaryen
         public void RemoveImport(string name)
         {
             BinaryenRemoveImport(handle, name ?? throw new ArgumentNullException(nameof(name)));
+        }
+
+        /// <summary>
+        /// Add the specified function export.
+        /// </summary>
+        /// <param name="name">The internal name.</param>
+        /// <param name="externalName">The external name.</param>
+        /// <returns>An <see cref="Export"/> instance representing the export.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="name"/> or <paramref name="externalName"/> is null.</exception>
+        /// <exception cref="OutOfMemoryException">the export could not be created.</exception>
+        [Obsolete("Use AddFunctionExport instead.")]
+        public Export AddExport(string name, string externalName)
+        {
+            return AddFunctionExport(name, externalName);
+        }
+
+        /// <summary>
+        /// Adds the specified function export.
+        /// </summary>
+        /// <param name="name">The internal name.</param>
+        /// <param name="externalName">The external name.</param>
+        /// <returns>An <see cref="Export"/> instance representing the export.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="name"/> or <paramref name="externalName"/> is null.</exception>
+        /// <exception cref="OutOfMemoryException">the export could not be created.</exception>
+        public Export AddFunctionExport(string name, string externalName)
+        {
+            if (name == null || externalName == null)
+                throw new ArgumentNullException(name == null ? nameof(name) : nameof(externalName));
+
+            var exportRef = BinaryenAddFunctionExport(handle, name, externalName);
+            if (exportRef == IntPtr.Zero)
+                throw new OutOfMemoryException();
+
+            return new Export(exportRef);
+        }
+
+        /// <summary>
+        /// Adds the specified table export.
+        /// </summary>
+        /// <param name="name">The internal name.</param>
+        /// <param name="externalName">The external name.</param>
+        /// <returns>An <see cref="Export"/> instance representing the export.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="name"/> or <paramref name="externalName"/> is null.</exception>
+        /// <exception cref="OutOfMemoryException">the export could not be created.</exception>
+        public Export AddTableExport(string name, string externalName)
+        {
+            if (name == null || externalName == null)
+                throw new ArgumentNullException(name == null ? nameof(name) : nameof(externalName));
+
+            var exportRef = BinaryenAddTableExport(handle, name, externalName);
+            if (exportRef == IntPtr.Zero)
+                throw new OutOfMemoryException();
+
+            return new Export(exportRef);
+        }
+
+        /// <summary>
+        /// Adds the specified memory export.
+        /// </summary>
+        /// <param name="name">The internal name.</param>
+        /// <param name="externalName">The external name.</param>
+        /// <returns>An <see cref="Export"/> instance representing the export.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="name"/> or <paramref name="externalName"/> is null.</exception>
+        /// <exception cref="OutOfMemoryException">the export could not be created.</exception>
+        public Export AddMemoryExport(string name, string externalName)
+        {
+            if (name == null || externalName == null)
+                throw new ArgumentNullException(name == null ? nameof(name) : nameof(externalName));
+
+            var exportRef = BinaryenAddMemoryExport(handle, name, externalName);
+            if (exportRef == IntPtr.Zero)
+                throw new OutOfMemoryException();
+
+            return new Export(exportRef);
+        }
+
+        /// <summary>
+        /// Adds the specified global export.
+        /// </summary>
+        /// <param name="name">The internal name.</param>
+        /// <param name="externalName">The external name.</param>
+        /// <returns>An <see cref="Export"/> instance representing the export.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="name"/> or <paramref name="externalName"/> is null.</exception>
+        /// <exception cref="OutOfMemoryException">the export could not be created.</exception>
+        public Export AddGlobalExport(string name, string externalName)
+        {
+            if (name == null || externalName == null)
+                throw new ArgumentNullException(name == null ? nameof(name) : nameof(externalName));
+
+            var exportRef = BinaryenAddGlobalExport(handle, name, externalName);
+            if (exportRef == IntPtr.Zero)
+                throw new OutOfMemoryException();
+
+            return new Export(exportRef);
+        }
+
+        /// <summary>
+        /// Removes the specified export.
+        /// </summary>
+        /// <param name="externalName">The external name of the export to remove.</param>
+        public void RemoveExport(string externalName)
+        {
+            BinaryenRemoveExport(handle, externalName);
         }
 
         /// <summary>
@@ -972,6 +1075,23 @@ namespace Binaryen
 
         [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
         private static extern void BinaryenRemoveImport(IntPtr module, string internalName);
+
+        // Exports
+
+        [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        private static extern IntPtr BinaryenAddFunctionExport(IntPtr module, string internalName, string externalName);
+
+        [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        private static extern IntPtr BinaryenAddTableExport(IntPtr module, string internalName, string externalName);
+
+        [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        private static extern IntPtr BinaryenAddMemoryExport(IntPtr module, string internalName, string externalName);
+
+        [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        private static extern IntPtr BinaryenAddGlobalExport(IntPtr module, string internalName, string externalName);
+
+        [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        private static extern void BinaryenRemoveExport(IntPtr module, string externalName);
 
         // Start function
 
