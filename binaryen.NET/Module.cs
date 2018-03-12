@@ -234,6 +234,152 @@ namespace Binaryen
         }
 
         /// <summary>
+        /// Adds the specified function import.
+        /// </summary>
+        /// <param name="name">The internal name.</param>
+        /// <param name="externalModuleName">The external module name.</param>
+        /// <param name="externalBaseName">The external base name.</param>
+        /// <param name="signature">The parametric signature of the function.</param>
+        [Obsolete("Use AddFunctionImport instead.")]
+        public Import AddImport(string name, string externalModuleName, string externalBaseName, Signature signature)
+        {
+            if (name == null)
+                throw new ArgumentNullException(nameof(name));
+
+            if (signature == null)
+                throw new ArgumentNullException(nameof(signature));
+
+            var importRef = BinaryenAddImport(handle, name, externalModuleName, externalBaseName, signature.Handle);
+            if (importRef == IntPtr.Zero)
+                throw new OutOfMemoryException();
+
+            return new Import(importRef);
+        }
+
+        /// <summary>
+        /// Adds the specified function import.
+        /// </summary>
+        /// <param name="name">The internal name.</param>
+        /// <param name="externalModuleName">The external module name.</param>
+        /// <param name="externalBaseName">The external base name.</param>
+        /// <param name="signature">The parametric signature of the function.</param>
+        /// <returns>An <see cref="Import"/> instance representing the import.</returns>
+        /// <exception cref="ArgumentNullException">a parameter is null.</exception>
+        /// <exception cref="OutOfMemoryException">the import could not be created.</exception>
+        public Import AddFunctionImport(string name, string externalModuleName, string externalBaseName, Signature signature)
+        {
+            if (name == null)
+                throw new ArgumentNullException(nameof(name));
+
+            if (externalModuleName == null)
+                throw new ArgumentNullException(nameof(externalModuleName));
+
+            if (externalBaseName == null)
+                throw new ArgumentNullException(nameof(externalBaseName));
+
+            if (signature == null)
+                throw new ArgumentNullException(nameof(signature));
+
+            var importRef = BinaryenAddFunctionImport(handle, name, externalModuleName, externalBaseName, signature.Handle);
+            if (importRef == IntPtr.Zero)
+                throw new OutOfMemoryException();
+
+            return new Import(importRef);
+        }
+
+        /// <summary>
+        /// Adds the specified function import.
+        /// </summary>
+        /// <param name="name">The internal name.</param>
+        /// <param name="externalModuleName">The external module name.</param>
+        /// <param name="externalBaseName">The external base name.</param>
+        /// <returns>An <see cref="Import"/> instance representing the import.</returns>
+        /// <exception cref="ArgumentNullException">a parameter is null.</exception>
+        /// <exception cref="OutOfMemoryException">the import could not be created.</exception>
+        public Import AddTableImport(string name, string externalModuleName, string externalBaseName)
+        {
+            if (name == null)
+                throw new ArgumentNullException(nameof(name));
+
+            if (externalModuleName == null)
+                throw new ArgumentNullException(nameof(externalModuleName));
+
+            if (externalBaseName == null)
+                throw new ArgumentNullException(nameof(externalBaseName));
+
+            var importRef = BinaryenAddTableImport(handle, name, externalModuleName, externalBaseName);
+            if (importRef == IntPtr.Zero)
+                throw new OutOfMemoryException();
+
+            return new Import(importRef);
+        }
+
+        /// <summary>
+        /// Adds the specified function import.
+        /// </summary>
+        /// <param name="name">The internal name.</param>
+        /// <param name="externalModuleName">The external module name.</param>
+        /// <param name="externalBaseName">The external base name.</param>
+        /// <returns>An <see cref="Import"/> instance representing the import.</returns>
+        /// <exception cref="ArgumentNullException">a parameter is null.</exception>
+        /// <exception cref="OutOfMemoryException">the import could not be created.</exception>
+        public Import AddMemoryImport(string name, string externalModuleName, string externalBaseName)
+        {
+            if (name == null)
+                throw new ArgumentNullException(nameof(name));
+
+            if (externalModuleName == null)
+                throw new ArgumentNullException(nameof(externalModuleName));
+
+            if (externalBaseName == null)
+                throw new ArgumentNullException(nameof(externalBaseName));
+
+            var importRef = BinaryenAddMemoryImport(handle, name, externalModuleName, externalBaseName);
+            if (importRef == IntPtr.Zero)
+                throw new OutOfMemoryException();
+
+            return new Import(importRef);
+        }
+
+        /// <summary>
+        /// Adds the specified function import.
+        /// </summary>
+        /// <param name="name">The internal name.</param>
+        /// <param name="externalModuleName">The external module name.</param>
+        /// <param name="externalBaseName">The external base name.</param>
+        /// <param name="globalType">The global type.</param>
+        /// <returns>An <see cref="Import"/> instance representing the import.</returns>
+        /// <exception cref="ArgumentNullException">a parameter is null.</exception>
+        /// <exception cref="OutOfMemoryException">the import could not be created.</exception>
+        public Import AddGlobalImport(string name, string externalModuleName, string externalBaseName, ValueType globalType)
+        {
+            if (name == null)
+                throw new ArgumentNullException(nameof(name));
+
+            if (externalModuleName == null)
+                throw new ArgumentNullException(nameof(externalModuleName));
+
+            if (externalBaseName == null)
+                throw new ArgumentNullException(nameof(externalBaseName));
+
+            var importRef = BinaryenAddGlobalImport(handle, name, externalModuleName, externalModuleName, globalType);
+            if (importRef == IntPtr.Zero)
+                throw new OutOfMemoryException();
+
+            return new Import(importRef);
+        }
+
+        /// <summary>
+        /// Removes the specified import.
+        /// </summary>
+        /// <param name="name">The name of the import to remove.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="name"/> is null.</exception>
+        public void RemoveImport(string name)
+        {
+            BinaryenRemoveImport(handle, name ?? throw new ArgumentNullException(nameof(name)));
+        }
+
+        /// <summary>
         /// Sets the start function for the module. There can only be one.
         /// </summary>
         /// <param name="start">The start function.</param>
@@ -693,12 +839,7 @@ namespace Binaryen
         /// <summary>
         /// Gets the handle of the module.
         /// </summary>
-#if DEBUG
-        public
-#else
-            internal
-#endif
-            IntPtr Handle => handle;
+        internal IntPtr Handle => handle;
 
         #region Imports
 
@@ -821,6 +962,26 @@ namespace Binaryen
 
         [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
         private static extern void BinaryenRemoveFunction(IntPtr module, string name);
+
+        // Imports
+
+        [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        private static extern /*WASM_DEPRECATED*/ IntPtr BinaryenAddImport(IntPtr module, string internalName, string externalModuleName, string externalBaseName, IntPtr type);
+
+        [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        private static extern IntPtr BinaryenAddFunctionImport(IntPtr module, string internalName, string externalModuleName, string externalBaseName, IntPtr functionType);
+
+        [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        private static extern IntPtr BinaryenAddTableImport(IntPtr module, string internalName, string externalModuleName, string externalBaseName);
+
+        [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        private static extern IntPtr BinaryenAddMemoryImport(IntPtr module, string internalName, string externalModuleName, string externalBaseName);
+
+        [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        private static extern IntPtr BinaryenAddGlobalImport(IntPtr module, string internalName, string externalModuleName, string externalBaseName, ValueType globalType);
+
+        [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        private static extern void BinaryenRemoveImport(IntPtr module, string internalName);
 
         // Start function
 

@@ -43,7 +43,9 @@
   <ItemGroup>
     <Compile Include="Expression.cs" />
     <Compile Include="ExpressionInfo.cs" />
+    <Compile Include="ExternalType.cs" />
     <Compile Include="Function.cs" />
+    <Compile Include="Import.cs" />
     <Compile Include="Literal.cs" />
     <Compile Include="Module.cs" />
     <Compile Include="Operator.cs" />
