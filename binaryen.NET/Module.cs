@@ -36,6 +36,50 @@ namespace Binaryen
                 throw new OutOfMemoryException();
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Module"/> class from the specified s-expression.
+        /// </summary>
+        /// <param name="text">The s-expression.</param>
+        /// <exception cref="OutOfMemoryException">the module could not be created.</exception>
+        public Module(string text)
+        {
+            handle = BinaryenModuleParse(text);
+            if (handle == IntPtr.Zero)
+                throw new OutOfMemoryException();
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Module"/> class from the specified binary.
+        /// </summary>
+        /// <param name="data">The binary module.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="data"/> is null.</exception>
+        /// <exception cref="OutOfMemoryException">the module could not be created.</exception>
+        public Module(byte[] data)
+        {
+            if (data == null)
+                throw new ArgumentNullException(nameof(data));
+
+            handle = BinaryenModuleRead(data, (uint)data.Length);
+            if (handle == IntPtr.Zero)
+                throw new OutOfMemoryException();
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Module"/> class from the specified binary.
+        /// </summary>
+        /// <param name="binary">The binary module.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="data"/> is null.</exception>
+        /// <exception cref="OutOfMemoryException">the module could not be created.</exception>
+        public Module(Binary binary)
+        {
+            if (binary == null || binary.Bytes == null)
+                throw new ArgumentNullException(nameof(binary));
+
+            handle = BinaryenModuleRead(binary.Bytes, (uint)binary.Bytes.Length);
+            if (handle == IntPtr.Zero)
+                throw new OutOfMemoryException();
+        }
+
         ~Module()
         {
             Dispose(false);
@@ -64,10 +108,115 @@ namespace Binaryen
         /// </summary>
         public void Print()
         {
-            if (handle != IntPtr.Zero)
+            if (handle != IntPtr.Zero) BinaryenModulePrint(handle);
+        }
+
+        /// <summary>
+        /// Prints the module to STDOUT in asm.js syntax.
+        /// </summary>
+        public void PrintAsmjs()
+        {
+            if (handle != IntPtr.Zero) BinaryenModulePrintAsmjs(handle);
+        }
+
+        /// <summary>
+        /// Validates the module.
+        /// </summary>
+        /// <returns><c>true</c> the module is valid; otherwise, <c>false</c>.</returns>
+        public bool Validate()
+        {
+            return BinaryenModuleValidate(handle) != 0;
+        }
+
+        /// <summary>
+        /// Runs the standard optimization passes on the module.
+        /// </summary>
+        public void Optimize()
+        {
+            BinaryenModuleOptimize(handle);
+        }
+
+        /// <summary>
+        /// Runs the specified optimization passes on the module.
+        /// </summary>
+        /// <param name="passes">The optimization passes to run.</param>
+        public void RunPasses(IEnumerable<string> passes)
+        {
+            if (passes != null && passes.Any())
             {
-                BinaryenModulePrint(handle);
+                RunPasses(passes.ToArray());
             }
+        }
+
+        /// <summary>
+        /// Runs the specified optimization passes on the module.
+        /// </summary>
+        /// <param name="passes">The optimization passes to run.</param>
+        public void RunPasses(string[] passes)
+        {
+            if (passes != null && passes.Length > 0)
+            {
+                BinaryenModuleRunPasses(handle, passes, (uint)passes.Length);
+            }
+        }
+
+        /// <summary>
+        /// Enables automatic insertion of <c>drop</c> operations where needed.
+        /// Lets you not worry about dropping when creating code.
+        /// </summary>
+        public void AutoDrop()
+        {
+            BinaryenModuleAutoDrop(handle);
+        }
+
+        /// <summary>
+        /// Executes the module in the Binaryen interpreter.
+        /// </summary>
+        public void Interpret()
+        {
+            if (handle != IntPtr.Zero) BinaryenModuleInterpret(handle);
+        }
+
+        /// <summary>
+        /// Returns the module in binary format.
+        /// </summary>
+        public Binary Emit()
+        {
+            return Emit(null);
+        }
+
+        /// <summary>
+        /// Returns the module in binary format. If <paramref name="sourceMapUrl"/> is null, source map generation is skipped.
+        /// </summary>
+        /// <param name="sourceMapUrl">The source map.</param>
+        public Binary Emit(string sourceMapUrl)
+        {
+            var result = BinaryenModuleAllocateAndWrite(handle, sourceMapUrl);
+
+            var bytes = new byte[result.BinaryBytes];
+            Marshal.Copy(result.Binary, bytes, 0, (int)result.BinaryBytes);
+
+            var sourceMap = sourceMapUrl != null ? Marshal.PtrToStringAnsi(result.SourceMap) : null;
+
+            return new Binary(bytes, sourceMap);
+        }
+
+        /// <summary>
+        /// Adds the specified debug info file name to the module and returns its index.
+        /// </summary>
+        /// <param name="filename">The debug info file.</param>
+        /// <returns>The index of the file name.</returns>
+        public uint AddDebugInfoFileName(string filename)
+        {
+            return BinaryenModuleAddDebugInfoFileName(handle, filename);
+        }
+
+        /// <summary>
+        /// Gets the debug info file name at the specified index.
+        /// </summary>
+        public string GetDebugFileName(uint index)
+        {
+            return Marshal.PtrToStringAnsi(BinaryenModuleGetDebugInfoFileName(handle, index));
         }
 
         /// <summary>
@@ -486,6 +635,36 @@ namespace Binaryen
                 throw new OutOfMemoryException();
 
             return new Global(name, type, mutable, init);
+        }
+
+        /// <summary>
+        /// Sets the function table for the module. There can only be one.
+        /// </summary>
+        /// <param name="functions">The functions.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="functions"/> is null.</exception>
+        public void SetFunctionTable(IEnumerable<Function> functions)
+        {
+            if (functions != null && functions.Any())
+            {
+                SetFunctionTable(functions.ToArray());
+            }
+            else
+            {
+                throw new ArgumentNullException(nameof(functions));
+            }
+        }
+
+        /// <summary>
+        /// Sets the function table for the module. There can only be one.
+        /// </summary>
+        /// <param name="functions">The functions.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="functions"/> is null.</exception>
+        public void SetFunctionTable(Function[] functions)
+        {
+            if (functions == null)
+                throw new ArgumentNullException(nameof(functions));
+
+            BinaryenSetFunctionTable(handle, functions.Select(x => x.Handle).ToArray(), (uint)functions.Length);
         }
 
         /// <summary>
@@ -965,6 +1144,33 @@ namespace Binaryen
         }
 
         /// <summary>
+        /// Gets or sets the global optimize level. 0, 1, 2 correspond to -O0, -O1, -O2 (default), etc.
+        /// </summary>
+        public static int OptimzeLevel
+        {
+            get => BinaryenGetOptimizeLevel();
+            set => BinaryenSetOptimizeLevel(value);
+        }
+
+        /// <summary>
+        /// Gets or sets the global shrink level. 0, 1, 2 correspond to -O0, -Os (default), -Oz.
+        /// </summary>
+        public static int ShrinkLevel
+        {
+            get => BinaryenGetShrinkLevel();
+            set => BinaryenSetShrinkLevel(value);
+        }
+
+        /// <summary>
+        /// Gets or sets whether debug information is emitted to binaries.
+        /// </summary>
+        public static bool DebugInfo
+        {
+            get => BinaryenGetDebugInfo() != 0;
+            set => BinaryenSetDebugInfo(value ? 1 : 0);
+        }
+
+        /// <summary>
         /// Gets the handle of the module.
         /// </summary>
         internal IntPtr Handle => handle;
@@ -977,16 +1183,77 @@ namespace Binaryen
         [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl)]
         private static extern void BinaryenModuleDispose(IntPtr handle);
 
+        // Operations
+
+        [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        private static extern IntPtr BinaryenModuleParse(string text);
+
+        [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void BinaryenModulePrint(IntPtr module);
+
+        [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void BinaryenModulePrintAsmjs(IntPtr module);
+
+        [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl)]
+        private static extern int BinaryenModuleValidate(IntPtr module);
+
+        [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void BinaryenModuleOptimize(IntPtr module);
+
+        [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl)]
+        private static extern int BinaryenGetOptimizeLevel();
+
+        [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void BinaryenSetOptimizeLevel(int level);
+
+        [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl)]
+        private static extern int BinaryenGetShrinkLevel();
+
+        [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void BinaryenSetShrinkLevel(int level);
+
+        [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl)]
+        private static extern int BinaryenGetDebugInfo();
+
+        [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void BinaryenSetDebugInfo(int on);
+
+        [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void BinaryenModuleRunPasses(IntPtr module, string[] passes, uint numPasses);
+
+        [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void BinaryenModuleAutoDrop(IntPtr module);
+
+        [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr BinaryenModuleRead(byte[] input, uint inputSize);
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct AllocateAndWriteResult
+        {
+            public IntPtr Binary;
+            public uint BinaryBytes;
+            public IntPtr SourceMap;
+        }
+
+        [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        private static extern AllocateAndWriteResult BinaryenModuleAllocateAndWrite(IntPtr module, string sourceMapUrl);
+
+        [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void BinaryenModuleInterpret(IntPtr module);
+
+        [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        private static extern uint BinaryenModuleAddDebugInfoFileName(IntPtr module, string filename);
+
+        [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl)]
+        private static extern /*const char**/ IntPtr BinaryenModuleGetDebugInfoFileName(IntPtr module, uint index);
+
+        // Function types
+
         [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
         private static extern IntPtr BinaryenAddFunctionType(IntPtr module, string name, ValueType result, ValueType[] paramTypes, uint numParams);
 
         [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr BinaryenGetFunctionTypeBySignature(IntPtr module, ValueType result, ValueType[] paramTypes, uint numParams);
-
-        // Operations
-
-        [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void BinaryenModulePrint(IntPtr module);
 
         // Expression creation
 
@@ -1132,6 +1399,11 @@ namespace Binaryen
 
         [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
         private static extern IntPtr BinaryenAddGlobal(IntPtr module, string name, ValueType type, sbyte mutable_, IntPtr init);
+
+        // Function table
+
+        [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void BinaryenSetFunctionTable(IntPtr module, IntPtr[] funcs, uint numFuncs);
 
         // Memory
 
