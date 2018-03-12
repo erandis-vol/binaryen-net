@@ -473,6 +473,22 @@ namespace Binaryen
         }
 
         /// <summary>
+        /// Adds the specified global type.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="type">The type.</param>
+        /// <param name="mutable">Determines whether the type is mutable.</param>
+        /// <param name="init">The initial value expression.</param>
+        public Global AddGlobal(string name, ValueType type, bool mutable, Expression init)
+        {
+            var globalRef = BinaryenAddGlobal(handle, name, type, (sbyte)(mutable ? 1 : 0), init.Handle);
+            if (globalRef == IntPtr.Zero)
+                throw new OutOfMemoryException();
+
+            return new Global(name, type, mutable, init);
+        }
+
+        /// <summary>
         /// Sets the start function for the module. There can only be one.
         /// </summary>
         /// <param name="start">The start function.</param>
@@ -1092,6 +1108,11 @@ namespace Binaryen
 
         [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
         private static extern void BinaryenRemoveExport(IntPtr module, string externalName);
+
+        // Globals
+
+        [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        private static extern IntPtr BinaryenAddGlobal(IntPtr module, string name, ValueType type, sbyte mutable_, IntPtr init);
 
         // Start function
 
