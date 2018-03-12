@@ -13,7 +13,7 @@ namespace Binaryen
         /// The type of the value.
         /// </summary>
         [FieldOffset(0)]
-        public Type Type;
+        public ValueType Type;
 
         /// <summary>
         /// 32-bit integer value.
@@ -107,16 +107,16 @@ namespace Binaryen
         {
             switch (Type)
             {
-                case Type.Int32:
+                case ValueType.Int32:
                     return I32.ToString();
 
-                case Type.Int64:
+                case ValueType.Int64:
                     return I64.ToString();
 
-                case Type.Float32:
+                case ValueType.Float32:
                     return F32.ToString();
 
-                case Type.Float64:
+                case ValueType.Float64:
                     return F64.ToString();
 
                 default:
@@ -151,16 +151,16 @@ namespace Binaryen
             {
                 switch (Type)
                 {
-                    case Type.Int32:
+                    case ValueType.Int32:
                         return I32 == other.I32;
 
-                    case Type.Int64:
+                    case ValueType.Int64:
                         return I64 == other.I64;
 
-                    case Type.Float32:
+                    case ValueType.Float32:
                         return F32 == other.F32;
 
-                    case Type.Float64:
+                    case ValueType.Float64:
                         return F64 == other.F64;
                 }
             }
@@ -176,16 +176,16 @@ namespace Binaryen
         {
             switch (Type)
             {
-                case Type.Int32:
+                case ValueType.Int32:
                     return Type.GetHashCode() ^ I32.GetHashCode();
 
-                case Type.Int64:
+                case ValueType.Int64:
                     return Type.GetHashCode() ^ I64.GetHashCode();
 
-                case Type.Float32:
+                case ValueType.Float32:
                     return Type.GetHashCode() ^ F32.GetHashCode();
 
-                case Type.Float64:
+                case ValueType.Float64:
                     return Type.GetHashCode() ^ F64.GetHashCode();
 
                 default:

@@ -23,8 +23,8 @@ namespace Binaryen
         /// Gets the type of the specified parameter.
         /// </summary>
         /// <param name="index">The paramter index.</param>
-        /// <returns>A <see cref="Type"/>.</returns>
-        public Type this[uint index]
+        /// <returns>A <see cref="ValueType"/>.</returns>
+        public ValueType this[uint index]
         {
             get => BinaryenFunctionTypeGetParam(handle, index);
         }
@@ -50,7 +50,7 @@ namespace Binaryen
         /// <summary>
         /// Gets the result type of the signature.
         /// </summary>
-        public Type Result => BinaryenFunctionTypeGetResult(handle);
+        public ValueType Result => BinaryenFunctionTypeGetResult(handle);
 
         /// <summary>
         /// Gets the handle of the signature.
@@ -66,10 +66,10 @@ namespace Binaryen
         private static extern uint BinaryenFunctionTypeGetNumParams(IntPtr ftype);
 
         [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl)]
-        private static extern Type BinaryenFunctionTypeGetParam(IntPtr ftype, uint index);
+        private static extern ValueType BinaryenFunctionTypeGetParam(IntPtr ftype, uint index);
 
         [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl)]
-        private static extern Type BinaryenFunctionTypeGetResult(IntPtr ftype);
+        private static extern ValueType BinaryenFunctionTypeGetResult(IntPtr ftype);
 
         #endregion
     }

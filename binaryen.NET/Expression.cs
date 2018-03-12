@@ -67,7 +67,7 @@ namespace Binaryen
         /// <summary>
         /// Gets the type of the expression.
         /// </summary>
-        public Type Type => BinaryenExpressionGetType(handle);
+        public ValueType Type => BinaryenExpressionGetType(handle);
 
         /// <summary>
         /// Gets information about the expression.
@@ -223,20 +223,20 @@ namespace Binaryen
 
                         switch (type)
                         {
-                            case Type.Int32:
-                                value = new Literal { I32 = BinaryenConstGetValueI32(handle), Type = Type.Int32 };
+                            case ValueType.Int32:
+                                value = new Literal { I32 = BinaryenConstGetValueI32(handle), Type = ValueType.Int32 };
                                 break;
 
-                            case Type.Int64:
-                                value = new Literal { I64 = BinaryenConstGetValueI64(handle), Type = Type.Int64 };
+                            case ValueType.Int64:
+                                value = new Literal { I64 = BinaryenConstGetValueI64(handle), Type = ValueType.Int64 };
                                 break;
 
-                            case Type.Float32:
-                                value = new Literal { F32 = BinaryenConstGetValueF32(handle), Type = Type.Float32 };
+                            case ValueType.Float32:
+                                value = new Literal { F32 = BinaryenConstGetValueF32(handle), Type = ValueType.Float32 };
                                 break;
 
-                            case Type.Float64:
-                                value = new Literal { F64 = BinaryenConstGetValueF64(handle), Type = Type.Float64 };
+                            case ValueType.Float64:
+                                value = new Literal { F64 = BinaryenConstGetValueF64(handle), Type = ValueType.Float64 };
                                 break;
 
                             default:
@@ -348,7 +348,7 @@ namespace Binaryen
         private static extern ExpressionId BinaryenExpressionGetId(IntPtr expr);
 
         [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl)]
-        private static extern Type BinaryenExpressionGetType(IntPtr expr);
+        private static extern ValueType BinaryenExpressionGetType(IntPtr expr);
 
         [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl)]
         private static extern void BinaryenExpressionPrint(IntPtr expr);
@@ -633,7 +633,7 @@ namespace Binaryen
         private static extern IntPtr BinaryenAtomicWaitGetTimeout(IntPtr expr);
 
         [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl)]
-        private static extern Type BinaryenAtomicWaitGetExpectedType(IntPtr expr);
+        private static extern ValueType BinaryenAtomicWaitGetExpectedType(IntPtr expr);
 
         // AtomicWake
 

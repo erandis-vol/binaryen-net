@@ -12,12 +12,12 @@ namespace HelloWorld
             using (var module = new Module())
             {
                 // Create a function type for i32(i32, i32)
-                var parameters = new Type[] { Type.Int32, Type.Int32 };
-                var iii = module.AddFunctionType("iii", Type.Int32, parameters);
+                var parameters = new ValueType[] { ValueType.Int32, ValueType.Int32 };
+                var iii = module.AddFunctionType("iii", ValueType.Int32, parameters);
 
                 // Get the 1 and 0 arguments, and add them
-                var x = module.GetLocal(0, Type.Int32);
-                var y = module.GetLocal(1, Type.Int32);
+                var x = module.GetLocal(0, ValueType.Int32);
+                var y = module.GetLocal(1, ValueType.Int32);
                 var add = module.Binary(BinaryOperator.AddInt32, x, y);
 
                 // Create the add function

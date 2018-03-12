@@ -6,9 +6,9 @@
     public abstract class ExpressionInfo
     {
         protected ExpressionId id;
-        protected Type type;
+        protected ValueType type;
 
-        protected ExpressionInfo(ExpressionId id, Type type)
+        protected ExpressionInfo(ExpressionId id, ValueType type)
         {
             this.id = id;
             this.type = type;
@@ -22,7 +22,7 @@
         /// <summary>
         /// Gets the type of the expression.
         /// </summary>
-        public Type Type => type;
+        public ValueType Type => type;
     }
 
     /// <summary>
@@ -33,7 +33,7 @@
         private string name;
         private Expression[] children;
 
-        public BlockInfo(string name, Expression[] children, Type type) : base(ExpressionId.Block, type)
+        public BlockInfo(string name, Expression[] children, ValueType type) : base(ExpressionId.Block, type)
         {
             this.name = name;
             this.children = children;
@@ -57,7 +57,7 @@
     {
         private Expression condition, ifTrue, ifFalse;
 
-        public IfInfo(Expression condition, Expression ifTrue, Expression ifFalse, Type type) : base(ExpressionId.If, type)
+        public IfInfo(Expression condition, Expression ifTrue, Expression ifFalse, ValueType type) : base(ExpressionId.If, type)
         {
             this.condition = condition;
             this.ifTrue = ifTrue;
@@ -88,7 +88,7 @@
         private string name;
         private Expression body;
 
-        public LoopInfo(string name, Expression body, Type type) : base(ExpressionId.Loop, type)
+        public LoopInfo(string name, Expression body, ValueType type) : base(ExpressionId.Loop, type)
         {
             this.name = name;
             this.body = body;
@@ -113,7 +113,7 @@
         private string label;
         private Expression condition, value;
 
-        public BreakInfo(string label, Expression condition, Expression value, Type type) : base(ExpressionId.Break, type)
+        public BreakInfo(string label, Expression condition, Expression value, ValueType type) : base(ExpressionId.Break, type)
         {
             this.label = label;
             this.condition = condition;
@@ -145,7 +145,7 @@
         private string defaultLabel;
         private Expression condition, value;
 
-        public SwitchInfo(string[] labels, string defaultLabel, Expression condition, Expression value, Type type)
+        public SwitchInfo(string[] labels, string defaultLabel, Expression condition, Expression value, ValueType type)
             : base(ExpressionId.Switch, type)
         {
             this.labels = labels;
@@ -183,7 +183,7 @@
         private string target;
         private Expression[] operands;
 
-        public CallInfo(string target, Expression[] operands, Type type) : base(ExpressionId.Call, type)
+        public CallInfo(string target, Expression[] operands, ValueType type) : base(ExpressionId.Call, type)
         {
             this.target = target;
             this.operands = operands;
@@ -208,7 +208,7 @@
         private string target;
         private Expression[] operands;
 
-        public CallImportInfo(string target, Expression[] operands, Type type) : base(ExpressionId.CallImport, type)
+        public CallImportInfo(string target, Expression[] operands, ValueType type) : base(ExpressionId.CallImport, type)
         {
             this.target = target;
             this.operands = operands;
@@ -233,7 +233,7 @@
         private Expression target;
         private Expression[] operands;
 
-        public CallIndirectInfo(Expression target, Expression[] operands, Type type) : base(ExpressionId.CallIndirect, type)
+        public CallIndirectInfo(Expression target, Expression[] operands, ValueType type) : base(ExpressionId.CallIndirect, type)
         {
             this.target = target;
             this.operands = operands;
@@ -257,7 +257,7 @@
     {
         private uint index;
 
-        public GetLocalInfo(uint index, Type type) : base(ExpressionId.GetLocal, type)
+        public GetLocalInfo(uint index, ValueType type) : base(ExpressionId.GetLocal, type)
         {
             this.index = index;
         }
@@ -277,7 +277,7 @@
         private bool isTee;
         private Expression value;
 
-        public SetLocalInfo(uint index, bool isTee, Expression value, Type type) : base(ExpressionId.SetLocal, type)
+        public SetLocalInfo(uint index, bool isTee, Expression value, ValueType type) : base(ExpressionId.SetLocal, type)
         {
             this.index = index;
             this.isTee = isTee;
@@ -307,7 +307,7 @@
     {
         private string name;
 
-        public GetGlobalInfo(string name, Type type) : base(ExpressionId.GetGlobal, type)
+        public GetGlobalInfo(string name, ValueType type) : base(ExpressionId.GetGlobal, type)
         {
             this.name = name;
         }
@@ -326,7 +326,7 @@
         private string name;
         private Expression value;
 
-        public SetGlobalInfo(string name, Expression value, Type type) : base(ExpressionId.SetGlobal, type)
+        public SetGlobalInfo(string name, Expression value, ValueType type) : base(ExpressionId.SetGlobal, type)
         {
             this.name = name;
             this.value = value;
@@ -351,7 +351,7 @@
         private string name;
         private Expression[] operands;
 
-        public HostInfo(string name, Expression[] operands, Type type) : base(ExpressionId.Host, type)
+        public HostInfo(string name, Expression[] operands, ValueType type) : base(ExpressionId.Host, type)
         {
             this.name = name;
             this.operands = operands;
@@ -377,7 +377,7 @@
         private uint offset, bytes, align;
         private Expression ptr;
 
-        public LoadInfo(bool isAtomic, bool isSigned, uint offset, uint bytes, uint align, Expression ptr, Type type)
+        public LoadInfo(bool isAtomic, bool isSigned, uint offset, uint bytes, uint align, Expression ptr, ValueType type)
             : base(ExpressionId.Load, type)
         {
             this.isAtomic = isAtomic;
@@ -428,7 +428,7 @@
         private uint offset, bytes, align;
         private Expression ptr, value;
 
-        public StoreInfo(bool isAtomic, uint offset, uint bytes, uint align, Expression ptr, Expression value, Type type)
+        public StoreInfo(bool isAtomic, uint offset, uint bytes, uint align, Expression ptr, Expression value, ValueType type)
             : base(ExpressionId.Load, type)
         {
             this.isAtomic = isAtomic;
@@ -477,7 +477,7 @@
     {
         private Literal value;
 
-        public ConstInfo(Literal value, Type type) : base(ExpressionId.Const, type)
+        public ConstInfo(Literal value, ValueType type) : base(ExpressionId.Const, type)
         {
             this.value = value;
         }
@@ -496,7 +496,7 @@
         private UnaryOperator op;
         private Expression value;
 
-        public UnaryInfo(UnaryOperator op, Expression value, Type type) : base(ExpressionId.Unary, type)
+        public UnaryInfo(UnaryOperator op, Expression value, ValueType type) : base(ExpressionId.Unary, type)
         {
             this.op = op;
             this.value = value;
@@ -521,7 +521,7 @@
         private BinaryOperator op;
         private Expression left, right;
 
-        public BinaryInfo(BinaryOperator op, Expression left, Expression right, Type type) : base(ExpressionId.Binary, type)
+        public BinaryInfo(BinaryOperator op, Expression left, Expression right, ValueType type) : base(ExpressionId.Binary, type)
         {
             this.op = op;
             this.left = left;
@@ -551,7 +551,7 @@
     {
         private Expression condition, ifTrue, ifFalse;
 
-        public SelectInfo(Expression condition, Expression ifTrue, Expression ifFalse, Type type) : base(ExpressionId.Select, type)
+        public SelectInfo(Expression condition, Expression ifTrue, Expression ifFalse, ValueType type) : base(ExpressionId.Select, type)
         {
             this.condition = condition;
             this.ifTrue = ifTrue;
@@ -581,7 +581,7 @@
     {
         private Expression value;
 
-        public DropInfo(Expression value, Type type) : base(ExpressionId.Drop, type)
+        public DropInfo(Expression value, ValueType type) : base(ExpressionId.Drop, type)
         {
             this.value = value;
         }
@@ -599,7 +599,7 @@
     {
         private Expression value;
 
-        public ReturnInfo(Expression value, Type type) : base(ExpressionId.Return, type)
+        public ReturnInfo(Expression value, ValueType type) : base(ExpressionId.Return, type)
         {
             this.value = value;
         }
@@ -615,7 +615,7 @@
     /// </summary>
     public class NopInfo : ExpressionInfo
     {
-        public NopInfo(Type type) : base(ExpressionId.Nop, type)
+        public NopInfo(ValueType type) : base(ExpressionId.Nop, type)
         { }
     }
 
@@ -624,7 +624,7 @@
     /// </summary>
     public class UnreachableInfo : ExpressionInfo
     {
-        public UnreachableInfo(Type type) : base(ExpressionId.Unreachable, type)
+        public UnreachableInfo(ValueType type) : base(ExpressionId.Unreachable, type)
         { }
     }
 
@@ -637,7 +637,7 @@
         private uint bytes, offset;
         private Expression ptr, value;
 
-        public AtomicReadModifyWriteInfo(AtomicOperator op, uint offset, uint bytes, Expression ptr, Expression value, Type type)
+        public AtomicReadModifyWriteInfo(AtomicOperator op, uint offset, uint bytes, Expression ptr, Expression value, ValueType type)
             : base(ExpressionId.AtomicRMW, type)
         {
             this.op = op;
@@ -681,7 +681,7 @@
         private uint offset, bytes;
         private Expression ptr, expected, replacement;
 
-        public AtomicCompareExchangeInfo(uint offset, uint bytes, Expression ptr, Expression expected, Expression replacement, Type type)
+        public AtomicCompareExchangeInfo(uint offset, uint bytes, Expression ptr, Expression expected, Expression replacement, ValueType type)
             : base(ExpressionId.AtomicCmpxchg, type)
         {
             this.offset = offset;
@@ -723,9 +723,9 @@
     public class AtomicWaitInfo : ExpressionInfo
     {
         private Expression ptr, expected, timeout;
-        private Type expectedType;
+        private ValueType expectedType;
 
-        public AtomicWaitInfo(Expression ptr, Expression expected, Expression timeout, Type expectedType, Type type)
+        public AtomicWaitInfo(Expression ptr, Expression expected, Expression timeout, ValueType expectedType, ValueType type)
             : base(ExpressionId.AtomicWait, type)
         {
             this.ptr = ptr;
@@ -752,7 +752,7 @@
         /// <summary>
         /// Gets the expected type.
         /// </summary>
-        public Type ExpectedType => expectedType;
+        public ValueType ExpectedType => expectedType;
     }
 
     /// <summary>
@@ -762,7 +762,7 @@
     {
         private Expression ptr, wakeCount;
 
-        public AtomicWakeInfo(Expression ptr, Expression wakeCount, Type type) : base(ExpressionId.AtomicWake, type)
+        public AtomicWakeInfo(Expression ptr, Expression wakeCount, ValueType type) : base(ExpressionId.AtomicWake, type)
         {
             this.ptr = ptr;
             this.wakeCount = wakeCount;

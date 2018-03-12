@@ -77,7 +77,7 @@ namespace Binaryen
         /// <param name="result">The return type.</param>
         /// <returns>A <see cref="Signature"/> representing the function type.</returns>
         /// <exception cref="OutOfMemoryException">the type could not be created.</exception>
-        public Signature AddFunctionType(string name, Type result)
+        public Signature AddFunctionType(string name, ValueType result)
         {
             return AddFunctionType(name, result, null);
         }
@@ -90,7 +90,7 @@ namespace Binaryen
         /// <param name="parameters">The parameter types.</param>
         /// <returns>A <see cref="Signature"/> representing the function type.</returns>
         /// <exception cref="OutOfMemoryException">the type could not be created.</exception>
-        public Signature AddFunctionType(string name, Type result, IEnumerable<Type> parameters)
+        public Signature AddFunctionType(string name, ValueType result, IEnumerable<ValueType> parameters)
         {
             if (parameters.Any())
             {
@@ -110,7 +110,7 @@ namespace Binaryen
         /// <param name="parameters">The parameter types.</param>
         /// <returns>A <see cref="Signature"/> representing the function type.</returns>
         /// <exception cref="OutOfMemoryException">the type could not be created.</exception>
-        public Signature AddFunctionType(string name, Type result, Type[] parameters)
+        public Signature AddFunctionType(string name, ValueType result, ValueType[] parameters)
         {
             IntPtr signatureRef;
 
@@ -138,7 +138,7 @@ namespace Binaryen
         /// <param name="parameters"></param>
         /// <returns>A <see cref="Signature"/> representing the function type.
         /// If there is no such type, returns <c>null</c>.</returns>
-        public Signature GetFunctionTypeBySignature(Type result, Type[] parameters)
+        public Signature GetFunctionTypeBySignature(ValueType result, ValueType[] parameters)
         {
             var sig = BinaryenGetFunctionTypeBySignature(handle, result, parameters, (uint)parameters.Length);
             return sig == IntPtr.Zero ? null : new Signature(sig);
@@ -167,7 +167,7 @@ namespace Binaryen
         /// <param name="body">The function body.</param>
         /// <returns>A <see cref="Function"/> instance.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="signature"/> or <paramref name="body"/> is null.</exception>
-        public Function AddFunction(string name, Signature signature, IEnumerable<Type> varTypes, Expression body)
+        public Function AddFunction(string name, Signature signature, IEnumerable<ValueType> varTypes, Expression body)
         {
             if (varTypes.Any())
             {
@@ -188,7 +188,7 @@ namespace Binaryen
         /// <param name="body">The function body.</param>
         /// <returns>A <see cref="Function"/> instance.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="signature"/> or <paramref name="body"/> is null.</exception>
-        public Function AddFunction(string name, Signature signature, Type[] varTypes, Expression body)
+        public Function AddFunction(string name, Signature signature, ValueType[] varTypes, Expression body)
         {
             if (signature == null || body == null)
                 throw new ArgumentNullException(signature == null ? nameof(signature) : nameof(body));
@@ -251,10 +251,10 @@ namespace Binaryen
         /// </summary>
         /// <param name="label">The block label. Can be <c>null</c>.</param>
         /// <param name="children">The block body.</param>
-        /// <param name="type">The result type. If set to <see cref="Type.Auto"/>, it will be determined automatically.</param>
+        /// <param name="type">The result type. If set to <see cref="ValueType.Auto"/>, it will be determined automatically.</param>
         /// <returns>An <see cref="Expression"/> instance.</returns>
         /// <exception cref="OutOfMemoryException">the expression could not be created.</exception>
-        public Expression Block(string label, IEnumerable<Expression> children, Type type = Type.None)
+        public Expression Block(string label, IEnumerable<Expression> children, ValueType type = ValueType.None)
         {
             IntPtr blockRef;
 
@@ -342,7 +342,7 @@ namespace Binaryen
             return new Expression(@switch);
         }
 
-        public Expression Call(string target, IEnumerable<Expression> operands, Type returnType)
+        public Expression Call(string target, IEnumerable<Expression> operands, ValueType returnType)
         {
             var operandHandles = operands.Select(x => x.Handle).ToArray();
 
@@ -353,7 +353,7 @@ namespace Binaryen
             return new Expression(call);
         }
 
-        public Expression CallImport(string target, IEnumerable<Expression> operands, Type returnType)
+        public Expression CallImport(string target, IEnumerable<Expression> operands, ValueType returnType)
         {
             var operandHandles = operands.Select(x => x.Handle).ToArray();
 
@@ -382,7 +382,7 @@ namespace Binaryen
         /// <param name="type">The type of the local.</param>
         /// <returns>An <see cref="Expression"/> instance.</returns>
         /// <exception cref="OutOfMemoryException">the expression could not be created.</exception>
-        public Expression GetLocal(uint index, Type type)
+        public Expression GetLocal(uint index, ValueType type)
         {
             var expr = BinaryenGetLocal(handle, index, type);
             if (expr == IntPtr.Zero)
@@ -423,7 +423,7 @@ namespace Binaryen
             return new Expression(expr);
         }
 
-        public Expression GetGlobal(string name, Type type)
+        public Expression GetGlobal(string name, ValueType type)
         {
             if (name == null)
                 throw new ArgumentNullException(nameof(name));
@@ -447,12 +447,12 @@ namespace Binaryen
             return new Expression(expr);
         }
 
-        public Expression Load(uint bytes, bool signed, uint offset, Type type, Expression ptr)
+        public Expression Load(uint bytes, bool signed, uint offset, ValueType type, Expression ptr)
         {
             return Load(bytes, signed, offset, 0, type, ptr);
         }
 
-        public Expression Load(uint bytes, bool signed, uint offset, uint align, Type type, Expression ptr)
+        public Expression Load(uint bytes, bool signed, uint offset, uint align, ValueType type, Expression ptr)
         {
             if (ptr == null)
                 throw new ArgumentNullException(nameof(ptr));
@@ -464,12 +464,12 @@ namespace Binaryen
             return new Expression(load);
         }
 
-        public Expression Store(uint bytes, uint offset, Expression ptr, Expression value, Type type)
+        public Expression Store(uint bytes, uint offset, Expression ptr, Expression value, ValueType type)
         {
             return Store(bytes, offset, 0, ptr, value, type);
         }
 
-        public Expression Store(uint bytes, uint offset, uint align, Expression ptr, Expression value, Type type)
+        public Expression Store(uint bytes, uint offset, uint align, Expression ptr, Expression value, ValueType type)
         {
             if (ptr == null || value == null)
                 throw new ArgumentNullException(ptr == null ? nameof(ptr) : nameof(value));
@@ -606,7 +606,7 @@ namespace Binaryen
             return new Expression(expr);
         }
 
-        public Expression AtomicLoad(uint bytes, uint offset, Type type, Expression ptr)
+        public Expression AtomicLoad(uint bytes, uint offset, ValueType type, Expression ptr)
         {
             if (ptr == null)
                 throw new ArgumentNullException(nameof(ptr));
@@ -618,7 +618,7 @@ namespace Binaryen
             return new Expression(expr);
         }
 
-        public Expression AtomicStore(uint bytes, uint offset, Expression ptr, Expression value, Type type)
+        public Expression AtomicStore(uint bytes, uint offset, Expression ptr, Expression value, ValueType type)
         {
             if (ptr == null || value == null)
                 throw new ArgumentNullException(ptr == null ? nameof(ptr) : nameof(value));
@@ -630,7 +630,7 @@ namespace Binaryen
             return new Expression(expr);
         }
 
-        public Expression AtomicReadModifyWrite(AtomicOperator op, uint bytes, uint offset, Expression ptr, Expression value, Type type)
+        public Expression AtomicReadModifyWrite(AtomicOperator op, uint bytes, uint offset, Expression ptr, Expression value, ValueType type)
         {
             if (ptr == null || value == null)
                 throw new ArgumentNullException(ptr == null ? nameof(ptr) : nameof(value));
@@ -642,7 +642,7 @@ namespace Binaryen
             return new Expression(expr);
         }
 
-        public Expression AtomicCompareExchange(uint bytes, uint offset, Expression ptr, Expression expected, Expression replacement, Type type)
+        public Expression AtomicCompareExchange(uint bytes, uint offset, Expression ptr, Expression expected, Expression replacement, ValueType type)
         {
             if (ptr == null)
                 throw new ArgumentNullException(nameof(ptr));
@@ -660,7 +660,7 @@ namespace Binaryen
             return new Expression(expr);
         }
 
-        public Expression AtomicWait(Expression ptr, Expression expected, Expression timeout, Type type)
+        public Expression AtomicWait(Expression ptr, Expression expected, Expression timeout, ValueType type)
         {
             if (ptr == null)
                 throw new ArgumentNullException(nameof(ptr));
@@ -709,10 +709,10 @@ namespace Binaryen
         private static extern void BinaryenModuleDispose(IntPtr handle);
 
         [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-        private static extern IntPtr BinaryenAddFunctionType(IntPtr module, string name, Type result, Type[] paramTypes, uint numParams);
+        private static extern IntPtr BinaryenAddFunctionType(IntPtr module, string name, ValueType result, ValueType[] paramTypes, uint numParams);
 
         [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr BinaryenGetFunctionTypeBySignature(IntPtr module, Type result, Type[] paramTypes, uint numParams);
+        private static extern IntPtr BinaryenGetFunctionTypeBySignature(IntPtr module, ValueType result, ValueType[] paramTypes, uint numParams);
 
         // Operations
 
@@ -722,7 +722,7 @@ namespace Binaryen
         // Expression creation
 
         [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-        private static extern IntPtr BinaryenBlock(IntPtr module, string name, IntPtr[] children, uint numChildren, Type type);
+        private static extern IntPtr BinaryenBlock(IntPtr module, string name, IntPtr[] children, uint numChildren, ValueType type);
 
         [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr BinaryenIf(IntPtr module, IntPtr condition, IntPtr ifTrue, IntPtr ifFalse);
@@ -737,16 +737,16 @@ namespace Binaryen
         private static extern IntPtr BinaryenSwitch(IntPtr module, string[] names, uint numNames, string defaultName, IntPtr condition, IntPtr value);
 
         [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-        private static extern IntPtr BinaryenCall(IntPtr module, string target, IntPtr[] operands, uint numOperands, Type returnType);
+        private static extern IntPtr BinaryenCall(IntPtr module, string target, IntPtr[] operands, uint numOperands, ValueType returnType);
 
         [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-        private static extern IntPtr BinaryenCallImport(IntPtr module, string target, IntPtr[] operands, uint numOperands, Type returnType);
+        private static extern IntPtr BinaryenCallImport(IntPtr module, string target, IntPtr[] operands, uint numOperands, ValueType returnType);
 
         [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
         private static extern IntPtr BinaryenCallIndirect(IntPtr module, IntPtr target, IntPtr[] operands, uint numOperands, string type);
 
         [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr BinaryenGetLocal(IntPtr module, uint index, Type type);
+        private static extern IntPtr BinaryenGetLocal(IntPtr module, uint index, ValueType type);
 
         [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr BinaryenSetLocal(IntPtr module, uint index, IntPtr value);
@@ -755,16 +755,16 @@ namespace Binaryen
         private static extern IntPtr BinaryenTeeLocal(IntPtr module, uint index, IntPtr value);
 
         [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-        private static extern IntPtr BinaryenGetGlobal(IntPtr module, string name, Type type);
+        private static extern IntPtr BinaryenGetGlobal(IntPtr module, string name, ValueType type);
 
         [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
         private static extern IntPtr BinaryenSetGlobal(IntPtr module, string name, IntPtr value);
 
         [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr BinaryenLoad(IntPtr module, uint bytes, sbyte signed, uint offset, uint align, Type type, IntPtr ptr);
+        private static extern IntPtr BinaryenLoad(IntPtr module, uint bytes, sbyte signed, uint offset, uint align, ValueType type, IntPtr ptr);
 
         [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr BinaryenStore(IntPtr module, uint bytes, uint offset, uint align, IntPtr ptr, IntPtr value, Type type);
+        private static extern IntPtr BinaryenStore(IntPtr module, uint bytes, uint offset, uint align, IntPtr ptr, IntPtr value, ValueType type);
 
         [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr BinaryenConst(IntPtr module, Literal value);
@@ -794,19 +794,19 @@ namespace Binaryen
         private static extern IntPtr BinaryenUnreachable(IntPtr module);
 
         [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr BinaryenAtomicLoad(IntPtr module, uint bytes, uint offset, Type type, IntPtr ptr);
+        private static extern IntPtr BinaryenAtomicLoad(IntPtr module, uint bytes, uint offset, ValueType type, IntPtr ptr);
 
         [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr BinaryenAtomicStore(IntPtr module, uint bytes, uint offset, IntPtr ptr, IntPtr value, Type type);
+        private static extern IntPtr BinaryenAtomicStore(IntPtr module, uint bytes, uint offset, IntPtr ptr, IntPtr value, ValueType type);
 
         [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr BinaryenAtomicRMW(IntPtr module, AtomicOperator op, uint bytes, uint offset, IntPtr ptr, IntPtr value, Type type);
+        private static extern IntPtr BinaryenAtomicRMW(IntPtr module, AtomicOperator op, uint bytes, uint offset, IntPtr ptr, IntPtr value, ValueType type);
 
         [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr BinaryenAtomicCmpxchg(IntPtr module, uint bytes, uint offset, IntPtr ptr, IntPtr expected, IntPtr replacement, Type type);
+        private static extern IntPtr BinaryenAtomicCmpxchg(IntPtr module, uint bytes, uint offset, IntPtr ptr, IntPtr expected, IntPtr replacement, ValueType type);
 
         [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr BinaryenAtomicWait(IntPtr module, IntPtr ptr, IntPtr expected, IntPtr timeout, Type type);
+        private static extern IntPtr BinaryenAtomicWait(IntPtr module, IntPtr ptr, IntPtr expected, IntPtr timeout, ValueType type);
 
         [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr BinaryenAtomicWake(IntPtr module, IntPtr ptr, IntPtr wakeCount);
@@ -814,7 +814,7 @@ namespace Binaryen
         // Functions
 
         [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-        private static extern IntPtr BinaryenAddFunction(IntPtr module, string name, IntPtr type, Type[] varTypes, uint numVarTypes, IntPtr body);
+        private static extern IntPtr BinaryenAddFunction(IntPtr module, string name, IntPtr type, ValueType[] varTypes, uint numVarTypes, IntPtr body);
 
         [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
         private static extern IntPtr BinaryenGetFunction(IntPtr module, string name);

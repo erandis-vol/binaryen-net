@@ -18,10 +18,10 @@ namespace Binaryen
         /// <summary>
         /// Returns the parameter types of the function.
         /// </summary>
-        public Type[] GetParameters()
+        public ValueType[] GetParameters()
         {
             var parameterCount = BinaryenFunctionGetNumParams(handle);
-            var parameters = new Type[parameterCount];
+            var parameters = new ValueType[parameterCount];
 
             for (uint i = 0; i < parameterCount; i++)
                 parameters[i] = BinaryenFunctionGetParam(handle, i);
@@ -33,10 +33,10 @@ namespace Binaryen
         /// Returns the local variable types of the function.
         /// </summary>
         /// <returns></returns>
-        public Type[] GetLocals()
+        public ValueType[] GetLocals()
         {
             var localCount = BinaryenFunctionGetNumVars(handle);
-            var locals = new Type[localCount];
+            var locals = new ValueType[localCount];
 
             for (uint i = 0; i < localCount; i++)
                 locals[i] = BinaryenFunctionGetVar(handle, i);
@@ -99,7 +99,7 @@ namespace Binaryen
         /// <summary>
         /// Gets the result type of the function.
         /// </summary>
-        public Type Result => BinaryenFunctionGetResult(handle);
+        public ValueType Result => BinaryenFunctionGetResult(handle);
 
         /// <summary>
         /// Gets the body of the function.
@@ -130,16 +130,16 @@ namespace Binaryen
         private static extern uint BinaryenFunctionGetNumParams(IntPtr func);
 
         [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl)]
-        private static extern Type BinaryenFunctionGetParam(IntPtr func, uint index);
+        private static extern ValueType BinaryenFunctionGetParam(IntPtr func, uint index);
 
         [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl)]
-        private static extern Type BinaryenFunctionGetResult(IntPtr func);
+        private static extern ValueType BinaryenFunctionGetResult(IntPtr func);
 
         [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl)]
         private static extern uint BinaryenFunctionGetNumVars(IntPtr func);
 
         [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl)]
-        private static extern Type BinaryenFunctionGetVar(IntPtr func, uint index);
+        private static extern ValueType BinaryenFunctionGetVar(IntPtr func, uint index);
 
         [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr BinaryenFunctionGetBody(IntPtr func);

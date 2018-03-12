@@ -3,7 +3,7 @@
     /// <summary>
     /// Represents a value type.
     /// </summary>
-    public enum Type : int
+    public enum ValueType : int
     {
         /// <summary>
         /// No type.
