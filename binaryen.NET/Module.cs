@@ -491,22 +491,20 @@ namespace Binaryen
         /// <summary>
         /// Sets the memory for the module. There can only be one.
         /// </summary>
-        public void SetMemory(uint initial, uint maximum, string exportName, string[] segments, Expression[] segmentOffsets, uint[] segmentSizes)
+        /// <param name="initial">The initial size of the memory.</param>
+        /// <param name="maximum">The maximum size of the memory.</param>
+        /// <param name="exportName">The export name.</param>
+        /// <param name="segments">The memory segments.</param>
+        public void SetMemory(uint initial, uint maximum, string exportName, MemorySegment[] segments)
         {
             if (segments == null)
                 throw new ArgumentNullException(nameof(segments));
 
-            if (segmentOffsets == null)
-                throw new ArgumentNullException(nameof(segmentOffsets));
+            var segmentData = segments.Select(x => x.Data).ToArray();
+            var segmentOffsets = segments.Select(x => x.Offset.Handle).ToArray();
+            var segmentSizes = segments.Select(x => x.Size).ToArray();
 
-            if (segmentSizes == null)
-                throw new ArgumentNullException(nameof(segmentSizes));
-
-            if (segments.Length != segmentOffsets.Length || segments.Length != segmentSizes.Length)
-                throw new ArgumentException("Ensure segments have the same number of offsets and sizes.");
-
-            BinaryenSetMemory(handle, initial, maximum, exportName, segments,
-                segmentOffsets.Select(x => x.Handle).ToArray(), segmentSizes, (uint)segmentSizes.Length);
+            BinaryenSetMemory(handle, initial, maximum, exportName, segmentData, segmentOffsets, segmentSizes, (uint)segments.Length);
         }
 
         /// <summary>
@@ -1138,7 +1136,7 @@ namespace Binaryen
         // Memory
 
         [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-        private static extern void BinaryenSetMemory(IntPtr module, uint initial, uint maximum, string exportName, string[] segments, IntPtr[] segmentOffsets, uint[] segmentSizes, uint numSegments);
+        private static extern void BinaryenSetMemory(IntPtr module, uint initial, uint maximum, string exportName, byte[][] segments, IntPtr[] segmentOffsets, uint[] segmentSizes, uint numSegments);
 
         // Start function
 
