@@ -489,6 +489,27 @@ namespace Binaryen
         }
 
         /// <summary>
+        /// Sets the memory for the module. There can only be one.
+        /// </summary>
+        public void SetMemory(uint initial, uint maximum, string exportName, string[] segments, Expression[] segmentOffsets, uint[] segmentSizes)
+        {
+            if (segments == null)
+                throw new ArgumentNullException(nameof(segments));
+
+            if (segmentOffsets == null)
+                throw new ArgumentNullException(nameof(segmentOffsets));
+
+            if (segmentSizes == null)
+                throw new ArgumentNullException(nameof(segmentSizes));
+
+            if (segments.Length != segmentOffsets.Length || segments.Length != segmentSizes.Length)
+                throw new ArgumentException("Ensure segments have the same number of offsets and sizes.");
+
+            BinaryenSetMemory(handle, initial, maximum, exportName, segments,
+                segmentOffsets.Select(x => x.Handle).ToArray(), segmentSizes, (uint)segmentSizes.Length);
+        }
+
+        /// <summary>
         /// Sets the start function for the module. There can only be one.
         /// </summary>
         /// <param name="start">The start function.</param>
@@ -1113,6 +1134,11 @@ namespace Binaryen
 
         [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
         private static extern IntPtr BinaryenAddGlobal(IntPtr module, string name, ValueType type, sbyte mutable_, IntPtr init);
+
+        // Memory
+
+        [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        private static extern void BinaryenSetMemory(IntPtr module, uint initial, uint maximum, string exportName, string[] segments, IntPtr[] segmentOffsets, uint[] segmentSizes, uint numSegments);
 
         // Start function
 
