@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace Binaryen
 {
@@ -191,6 +192,10 @@ namespace Binaryen
         /// <param name="sourceMapUrl">The source map.</param>
         public Binary Emit(string sourceMapUrl)
         {
+            throw new NotSupportedException();
+
+            // TODO: We need some way to free the allocation so we don't get a memory leak.
+            /*
             var result = BinaryenModuleAllocateAndWrite(handle, sourceMapUrl);
 
             var bytes = new byte[result.BinaryBytes];
@@ -199,6 +204,7 @@ namespace Binaryen
             var sourceMap = sourceMapUrl != null ? Marshal.PtrToStringAnsi(result.SourceMap) : null;
 
             return new Binary(bytes, sourceMap);
+            */
         }
 
         /// <summary>
@@ -217,6 +223,29 @@ namespace Binaryen
         public string GetDebugFileName(uint index)
         {
             return Marshal.PtrToStringAnsi(BinaryenModuleGetDebugInfoFileName(handle, index));
+        }
+
+        /// <summary>
+        /// Adds a new function type.
+        /// </summary>
+        /// <param name="result">The return type.</param>
+        /// <returns>A <see cref="Signature"/> representing the function type.</returns>
+        /// <exception cref="OutOfMemoryException">the type could not be created.</exception>
+        public Signature AddFunctionType(ValueType result)
+        {
+            return AddFunctionType(null, result, null);
+        }
+
+        /// <summary>
+        /// Adds a new function type.
+        /// </summary>
+        /// <param name="result">The return type.</param>
+        /// <param name="parameters">The parameter types.</param>
+        /// <returns>A <see cref="Signature"/> representing the function type.</returns>
+        /// <exception cref="OutOfMemoryException">the type could not be created.</exception>
+        public Signature AddFunctionType(ValueType result, IEnumerable<ValueType> parameters)
+        {
+            return AddFunctionType(null, result, parameters);
         }
 
         /// <summary>
@@ -241,7 +270,7 @@ namespace Binaryen
         /// <exception cref="OutOfMemoryException">the type could not be created.</exception>
         public Signature AddFunctionType(string name, ValueType result, IEnumerable<ValueType> parameters)
         {
-            if (parameters.Any())
+            if (parameters != null && parameters.Any())
             {
                 return AddFunctionType(name, result, parameters.ToArray());
             }
@@ -679,7 +708,17 @@ namespace Binaryen
             if (segments == null)
                 throw new ArgumentNullException(nameof(segments));
 
-            var segmentData = segments.Select(x => x.Data).ToArray();
+            string BytesToString(byte[] bytes)
+            {
+                var sb = new StringBuilder();
+                foreach (var b in bytes)
+                {
+                    sb.Append((char)b);
+                }
+                return sb.ToString();
+            }
+
+            var segmentData = segments.Select(x => BytesToString(x.Data)).ToArray();
             var segmentOffsets = segments.Select(x => x.Offset.Handle).ToArray();
             var segmentSizes = segments.Select(x => x.Size).ToArray();
 
@@ -702,12 +741,40 @@ namespace Binaryen
         /// <summary>
         /// Creates a block <see cref="Expression"/>.
         /// </summary>
+        /// <param name="type">The result type. If set to <see cref="ValueType.Auto"/>, it will be determined automatically.</param>
+        /// <returns>An <see cref="Expression"/> instance.</returns>
+        /// <exception cref="OutOfMemoryException">the expression could not be created.</exception>
+        public Expression Block(ValueType type = ValueType.Auto)
+        {
+            var blockRef = BinaryenBlock(handle, null, null, 0u, type);
+            if (blockRef == IntPtr.Zero)
+                throw new OutOfMemoryException();
+
+            return new Expression(blockRef);
+        }
+
+        /// <summary>
+        /// Creates a block <see cref="Expression"/>.
+        /// </summary>
         /// <param name="label">The block label. Can be <c>null</c>.</param>
         /// <param name="children">The block body.</param>
         /// <param name="type">The result type. If set to <see cref="ValueType.Auto"/>, it will be determined automatically.</param>
         /// <returns>An <see cref="Expression"/> instance.</returns>
         /// <exception cref="OutOfMemoryException">the expression could not be created.</exception>
-        public Expression Block(string label, IEnumerable<Expression> children, ValueType type = ValueType.None)
+        public Expression Block(string label, Expression body, ValueType type = ValueType.Auto)
+        {
+            return Block(label, new [] { body }, type);
+        }
+
+        /// <summary>
+        /// Creates a block <see cref="Expression"/>.
+        /// </summary>
+        /// <param name="label">The block label. Can be <c>null</c>.</param>
+        /// <param name="children">The block body.</param>
+        /// <param name="type">The result type. If set to <see cref="ValueType.Auto"/>, it will be determined automatically.</param>
+        /// <returns>An <see cref="Expression"/> instance.</returns>
+        /// <exception cref="OutOfMemoryException">the expression could not be created.</exception>
+        public Expression Block(string label, IEnumerable<Expression> children, ValueType type = ValueType.Auto)
         {
             IntPtr blockRef;
 
@@ -745,6 +812,18 @@ namespace Binaryen
                 throw new OutOfMemoryException();
 
             return new Expression(@if);
+        }
+
+        /// <summary>
+        /// Creates a loop <see cref="Expression"/>.
+        /// </summary>
+        /// <param name="body">The loop body.</param>
+        /// <returns>An <see cref="Expression"/> instance.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="body"/> is null.</exception>
+        /// <exception cref="OutOfMemoryException">the expression could not be created.</exception>
+        public Expression Loop(Expression body)
+        {
+            return Loop(null, body);
         }
 
         /// <summary>
@@ -817,15 +896,33 @@ namespace Binaryen
             return new Expression(call);
         }
 
+        public Expression CallIndirect(Expression target, string type)
+        {
+            return CallIndirect(target, null, type);
+        }
+
         public Expression CallIndirect(Expression target, IEnumerable<Expression> operands, string type)
         {
-            var operandHandles = operands.Select(x => x.Handle).ToArray();
+            if (target == null)
+                throw new ArgumentNullException(nameof(target));
 
-            var call = BinaryenCallIndirect(handle, target.Handle, operandHandles, (uint)operandHandles.Length, type);
-            if (call == IntPtr.Zero)
+            IntPtr callRef;
+
+            if (operands != null && operands.Any())
+            {
+                var operandHandles = operands.Select(x => x.Handle).ToArray();
+
+                callRef = BinaryenCallIndirect(handle, target.Handle, operandHandles, (uint)operandHandles.Length, type);
+            }
+            else
+            {
+                callRef = BinaryenCallIndirect(handle, target.Handle, null, 0u, type);
+            }
+
+            if (callRef == IntPtr.Zero)
                 throw new OutOfMemoryException();
 
-            return new Expression(call);
+            return new Expression(callRef);
         }
 
         /// <summary>
@@ -1428,7 +1525,8 @@ namespace Binaryen
         // Memory
 
         [DllImport("binaryen", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-        private static extern void BinaryenSetMemory(IntPtr module, uint initial, uint maximum, string exportName, byte[][] segments, IntPtr[] segmentOffsets, uint[] segmentSizes, uint numSegments);
+        private static extern void BinaryenSetMemory(IntPtr module, uint initial, uint maximum, string exportName,
+            string[] segments, IntPtr[] segmentOffsets, uint[] segmentSizes, uint numSegments);
 
         // Start function
 

@@ -90,6 +90,19 @@ namespace Binaryen
         }
 
         /// <summary>
+        /// Creates a new <see cref="Literal"/> value from the specified 32-bit floating point number bits.
+        /// </summary>
+        /// <param name="x">The 32-bit floating point bits.</param>
+        /// <returns>A <see cref="Literal"/> instance representing the specified bits.</returns>
+        public static Literal Float32Bits(uint x)
+        {
+            unchecked
+            {
+                return BinaryenLiteralFloat32Bits((int)x);
+            }
+        }
+
+        /// <summary>
         /// Creates a new <see cref="Literal"/> value from the specified 64-bit floating pointer number bits.
         /// </summary>
         /// <param name="x">The 64-bit floating point bits.</param>
@@ -97,6 +110,19 @@ namespace Binaryen
         public static Literal Float64Bits(long x)
         {
             return BinaryenLiteralFloat64Bits(x);
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="Literal"/> value from the specified 64-bit floating pointer number bits.
+        /// </summary>
+        /// <param name="x">The 64-bit floating point bits.</param>
+        /// <returns>A <see cref="Literal"/> instance representing the specified bits.</returns>
+        public static Literal Float64Bits(ulong x)
+        {
+            unchecked
+            {
+                return BinaryenLiteralFloat64Bits((long)x);
+            }
         }
 
         /// <summary>
