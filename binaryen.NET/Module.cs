@@ -934,6 +934,26 @@ namespace Binaryen
             return new Expression(expr);
         }
 
+        public Expression Const(int value)
+        {
+            return Const(Literal.Int32(value));
+        }
+
+        public Expression Const(long value)
+        {
+            return Const(Literal.Int64(value));
+        }
+
+        public Expression Const(float value)
+        {
+            return Const(Literal.Float32(value));
+        }
+
+        public Expression Const(double value)
+        {
+            return Const(Literal.Float64(value));
+        }
+
         public Expression Const(Literal value)
         {
             var expr = BinaryenConst(handle, value);
