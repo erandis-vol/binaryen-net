@@ -4,25 +4,26 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{549C74A8-4599-4FEE-B3D4-4BE49E1D4C5A}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Binaryen</RootNamespace>
-    <AssemblyName>binaryen.NET</AssemblyName>
+    <ProjectGuid>{21D0481A-2649-4BB4-B1B6-4248A15716E1}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>KitchenSink</RootNamespace>
+    <AssemblyName>KitchenSink</AssemblyName>
     <TargetFrameworkVersion>v4.7.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>..\..\..\bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -41,23 +42,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Binary.cs" />
-    <Compile Include="Export.cs" />
-    <Compile Include="Expression.cs" />
-    <Compile Include="ExpressionInfo.cs" />
-    <Compile Include="ExternalType.cs" />
-    <Compile Include="Function.cs" />
-    <Compile Include="Global.cs" />
-    <Compile Include="Import.cs" />
-    <Compile Include="Literal.cs" />
-    <Compile Include="MemorySegment.cs" />
-    <Compile Include="Module.cs" />
-    <Compile Include="Operator.cs" />
+    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Relooper.cs" />
-    <Compile Include="Signature.cs" />
-    <Compile Include="Tracing.cs" />
-    <Compile Include="ValueType.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\binaryen.NET\binaryen.NET.csproj">
+      <Project>{549c74a8-4599-4fee-b3d4-4be49e1d4c5a}</Project>
+      <Name>binaryen.NET</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
