@@ -6,29 +6,30 @@ namespace Binaryen
     /// <summary>
     /// Represents a module export.
     /// </summary>
-    public class Export
+    public class Export : AutomaticBaseObject
     {
-        private IntPtr handle;
-
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Export"/> class for the specified handle.
+        /// </summary>
+        /// <param name="handle">The handle to be managed.</param>
         public Export(IntPtr handle)
-        {
-            this.handle = handle;
-        }
+            : base(handle)
+        { }
 
         /// <summary>
         /// Gets the type (kind) of the export.
         /// </summary>
-        public ExternalType Type => BinaryenExportGetKind(handle);
+        public ExternalType Type => BinaryenExportGetKind(Handle);
 
         /// <summary>
         /// Gets the external name of the export.
         /// </summary>
-        public string Name => Marshal.PtrToStringAnsi(BinaryenExportGetName(handle));
+        public string Name => Marshal.PtrToStringAnsi(BinaryenExportGetName(Handle));
 
         /// <summary>
         /// Gets the internal name of the export.
         /// </summary>
-        public string Value => Marshal.PtrToStringAnsi(BinaryenExportGetValue(handle));
+        public string Value => Marshal.PtrToStringAnsi(BinaryenExportGetValue(Handle));
 
         #region Imports
 

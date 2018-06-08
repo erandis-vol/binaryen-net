@@ -6,44 +6,45 @@ namespace Binaryen
     /// <summary>
     /// Represents a module import.
     /// </summary>
-    public class Import
+    public class Import : AutomaticBaseObject
     {
-        private IntPtr handle;
-
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Import"/> class for the specified handle.
+        /// </summary>
+        /// <param name="handle">The handle to be managed.</param>
         public Import(IntPtr handle)
-        {
-            this.handle = handle;
-        }
+            : base(handle)
+        { }
 
         /// <summary>
         /// Gets the type (kind) of the import.
         /// </summary>
-        public ExternalType Type => BinaryenImportGetKind(handle);
+        public ExternalType Type => BinaryenImportGetKind(Handle);
 
         /// <summary>
         /// Gets the external module name of the import.
         /// </summary>
-        public string Module => Marshal.PtrToStringAnsi(BinaryenImportGetModule(handle));
+        public string Module => Marshal.PtrToStringAnsi(BinaryenImportGetModule(Handle));
 
         /// <summary>
         /// Gets the external base name of the import.
         /// </summary>
-        public string Base => Marshal.PtrToStringAnsi(BinaryenImportGetBase(handle));
+        public string Base => Marshal.PtrToStringAnsi(BinaryenImportGetBase(Handle));
 
         /// <summary>
         /// Gets the internal name of the import.
         /// </summary>
-        public string Name => Marshal.PtrToStringAnsi(BinaryenImportGetName(handle));
+        public string Name => Marshal.PtrToStringAnsi(BinaryenImportGetName(Handle));
 
         /// <summary>
         /// Gets the global type of the import.
         /// </summary>
-        public ValueType GlobalType => BinaryenImportGetGlobalType(handle);
+        public ValueType GlobalType => BinaryenImportGetGlobalType(Handle);
 
         /// <summary>
         /// Gets the name of the function type of the import.
         /// </summary>
-        public string FunctionType => Marshal.PtrToStringAnsi(BinaryenImportGetFunctionType(handle));
+        public string FunctionType => Marshal.PtrToStringAnsi(BinaryenImportGetFunctionType(Handle));
 
         #region Imports
 

@@ -6,18 +6,15 @@ namespace Binaryen
     /// <summary>
     /// Represents a function type.
     /// </summary>
-    public class Signature
+    public class Signature : AutomaticBaseObject
     {
-        private IntPtr handle;
-
         /// <summary>
-        /// Initializes a new instance of the <see cref="Signature"/> class
+        /// Initializes a new instance of the <see cref="Signature"/> class for the specified handle.
         /// </summary>
-        /// <param name="handle"></param>
+        /// <param name="handle">The handle to be managed.</param>
         public Signature(IntPtr handle)
-        {
-            this.handle = handle;
-        }
+            : base(handle)
+        { }
 
         /// <summary>
         /// Gets the type of the specified parameter.
@@ -26,7 +23,7 @@ namespace Binaryen
         /// <returns>A <see cref="ValueType"/>.</returns>
         public ValueType this[uint index]
         {
-            get => BinaryenFunctionTypeGetParam(handle, index);
+            get => BinaryenFunctionTypeGetParam(Handle, index);
         }
 
         /// <summary>
@@ -36,7 +33,7 @@ namespace Binaryen
         {
             get
             {
-                var ptr = BinaryenFunctionTypeGetName(handle);
+                var ptr = BinaryenFunctionTypeGetName(Handle);
                 var str = Marshal.PtrToStringAnsi(ptr);
                 return str;
             }
@@ -45,17 +42,12 @@ namespace Binaryen
         /// <summary>
         /// Gets the number of parameters of the signature.
         /// </summary>
-        public uint ParameterCount => BinaryenFunctionTypeGetNumParams(handle);
+        public uint ParameterCount => BinaryenFunctionTypeGetNumParams(Handle);
 
         /// <summary>
         /// Gets the result type of the signature.
         /// </summary>
-        public ValueType Result => BinaryenFunctionTypeGetResult(handle);
-
-        /// <summary>
-        /// Gets the handle of the signature.
-        /// </summary>
-        internal IntPtr Handle => handle;
+        public ValueType Result => BinaryenFunctionTypeGetResult(Handle);
 
         #region Imports
 

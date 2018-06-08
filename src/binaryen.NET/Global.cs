@@ -7,7 +7,7 @@ namespace Binaryen
     /// <summary>
     /// Represents a global value.
     /// </summary>
-    public class Global
+    public class Global : AutomaticBaseObject
     {
         private string name;
         private ValueType type;
@@ -15,11 +15,12 @@ namespace Binaryen
         private Expression init;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Global"/> class.
+        /// Initializes a new instance of the <see cref="Global"/> class for the specified handle.
         /// </summary>
         /// <param name="handle">The reference handle.</param>
         /// <exception cref="NotSupportedException">always throws.</exception>
         public Global(IntPtr handle)
+            : base(handle)
         {
             throw new NotSupportedException();
         }
@@ -32,6 +33,7 @@ namespace Binaryen
         /// <param name="mutable">Whether the value is mutable.</param>
         /// <param name="init">The initial value expression.</param>
         public Global(string name, ValueType type, bool mutable, Expression init)
+            : base(IntPtr.Zero)
         {
             this.name = name;
             this.type = type;

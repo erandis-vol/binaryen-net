@@ -6,25 +6,26 @@ namespace Binaryen
     /// <summary>
     /// Represents a function.
     /// </summary>
-    public class Function
+    public class Function : AutomaticBaseObject
     {
-        private IntPtr handle;
-
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Function"/> class for the specified handle.
+        /// </summary>
+        /// <param name="handle">The handle to be managed.</param>
         public Function(IntPtr handle)
-        {
-            this.handle = handle;
-        }
+            : base(handle)
+        { }
 
         /// <summary>
         /// Returns the parameter types of the function.
         /// </summary>
         public ValueType[] GetParameters()
         {
-            var parameterCount = BinaryenFunctionGetNumParams(handle);
+            var parameterCount = BinaryenFunctionGetNumParams(Handle);
             var parameters = new ValueType[parameterCount];
 
             for (uint i = 0; i < parameterCount; i++)
-                parameters[i] = BinaryenFunctionGetParam(handle, i);
+                parameters[i] = BinaryenFunctionGetParam(Handle, i);
 
             return parameters;
         }
@@ -35,11 +36,11 @@ namespace Binaryen
         /// <returns></returns>
         public ValueType[] GetLocals()
         {
-            var localCount = BinaryenFunctionGetNumVars(handle);
+            var localCount = BinaryenFunctionGetNumVars(Handle);
             var locals = new ValueType[localCount];
 
             for (uint i = 0; i < localCount; i++)
-                locals[i] = BinaryenFunctionGetVar(handle, i);
+                locals[i] = BinaryenFunctionGetVar(Handle, i);
 
             return locals;
         }
@@ -54,7 +55,7 @@ namespace Binaryen
             if (module == null)
                 throw new ArgumentNullException(nameof(module));
 
-            BinaryenFunctionOptimize(handle, module.Handle);
+            BinaryenFunctionOptimize(Handle, module.Handle);
         }
 
         /// <summary>
@@ -68,7 +69,7 @@ namespace Binaryen
             if (module == null || passes == null)
                 throw new ArgumentNullException(module == null ? nameof(module) : nameof(passes));
 
-            BinaryenFunctionRunPasses(handle, module.Handle, passes, (uint)passes.Length);
+            BinaryenFunctionRunPasses(Handle, module.Handle, passes, (uint)passes.Length);
         }
 
         /// <summary>
@@ -83,23 +84,23 @@ namespace Binaryen
             if (expression == null)
                 throw new ArgumentNullException(nameof(expression));
 
-            BinaryenFunctionSetDebugLocation(handle, expression.Handle, fileIndex, lineNumber, columnNumber);
+            BinaryenFunctionSetDebugLocation(Handle, expression.Handle, fileIndex, lineNumber, columnNumber);
         }
 
         /// <summary>
         /// Gets the name of the function.
         /// </summary>
-        public string Name => Marshal.PtrToStringAnsi(BinaryenFunctionGetName(handle));
+        public string Name => Marshal.PtrToStringAnsi(BinaryenFunctionGetName(Handle));
 
         /// <summary>
         /// Gets the name of the function type. May be <c>null</c> if the type is implicit.
         /// </summary>
-        public string Type => Marshal.PtrToStringAnsi(BinaryenFunctionGetType(handle));
+        public string Type => Marshal.PtrToStringAnsi(BinaryenFunctionGetType(Handle));
 
         /// <summary>
         /// Gets the result type of the function.
         /// </summary>
-        public ValueType Result => BinaryenFunctionGetResult(handle);
+        public ValueType Result => BinaryenFunctionGetResult(Handle);
 
         /// <summary>
         /// Gets the body of the function.
@@ -108,15 +109,10 @@ namespace Binaryen
         {
             get
             {
-                var exprRef = BinaryenFunctionGetBody(handle);
+                var exprRef = BinaryenFunctionGetBody(Handle);
                 return exprRef == IntPtr.Zero ? null : new Expression(exprRef);
             }
         }
-
-        /// <summary>
-        /// Gets the handle of the function.
-        /// </summary>
-        internal IntPtr Handle => handle;
 
         #region Imports
 

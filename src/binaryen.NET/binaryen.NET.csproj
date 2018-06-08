@@ -50,6 +50,7 @@
     <Compile Include="Global.cs" />
     <Compile Include="Import.cs" />
     <Compile Include="Literal.cs" />
+    <Compile Include="BaseObject.cs" />
     <Compile Include="MemorySegment.cs" />
     <Compile Include="Module.cs" />
     <Compile Include="Operator.cs" />

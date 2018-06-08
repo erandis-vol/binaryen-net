@@ -10,23 +10,18 @@ namespace Binaryen
     /// <para>General usage is (1) create a relooper, (2) create blocks, (3) add branches between them, (4) render the output.</para>
     /// <para>See Relooper.h for the original implementation and further details.</para>
     /// </remarks>
-    public class Relooper
+    public class Relooper : AutomaticBaseObject // NOTE: Not automatic, use RenderAndDispose
     {
-        private IntPtr handle;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="Relooper"/> class.
         /// </summary>
         public Relooper()
-        {
-            handle = RelooperCreate();
-            if (handle == IntPtr.Zero)
-                throw new OutOfMemoryException();
-        }
+            : base(RelooperCreate())
+        { }
 
         public RelooperBlock AddBlock(Expression code)
         {
-            var blockRef = RelooperAddBlock(handle, code.Handle);
+            var blockRef = RelooperAddBlock(Handle, code.Handle);
             if (blockRef == IntPtr.Zero)
                 throw new OutOfMemoryException();
 
@@ -40,7 +35,7 @@ namespace Binaryen
 
         public RelooperBlock AddBlockWithSwitch(Expression code, Expression condition)
         {
-            var blockRef = RelooperAddBlockWithSwitch(handle, code.Handle, condition.Handle);
+            var blockRef = RelooperAddBlockWithSwitch(Handle, code.Handle, condition.Handle);
             if (blockRef == IntPtr.Zero)
                 throw new OutOfMemoryException();
 
@@ -62,7 +57,7 @@ namespace Binaryen
         /// <exception cref="OutOfMemoryException">the expression could not be created.</exception>
         public Expression RenderAndDispose(RelooperBlock entry, uint labelHelper, Module module)
         {
-            var exprPtr = RelooperRenderAndDispose(handle, entry.Handle, labelHelper, module.Handle);
+            var exprPtr = RelooperRenderAndDispose(Handle, entry.Handle, labelHelper, module.Handle);
             if (exprPtr == IntPtr.Zero)
                 throw new OutOfMemoryException();
 
@@ -95,22 +90,14 @@ namespace Binaryen
     /// <summary>
     /// Represents a relooper block.
     /// </summary>
-    public class RelooperBlock
+    public class RelooperBlock : AutomaticBaseObject
     {
-        private IntPtr handle;
-
         /// <summary>
-        /// Initializes a new instance of the <see cref="RelooperBlock"/> class.
+        /// Initializes a new instance of the <see cref="RelooperBlock"/> class for the specified handle.
         /// </summary>
-        /// <param name="handle"></param>
+        /// <param name="handle">The handle to be managed.</param>
         public RelooperBlock(IntPtr handle)
-        {
-            this.handle = handle;
-        }
-
-        /// <summary>
-        /// Gets the block handle.
-        /// </summary>
-        public IntPtr Handle => handle;
+            : base(handle)
+        { }
     }
 }

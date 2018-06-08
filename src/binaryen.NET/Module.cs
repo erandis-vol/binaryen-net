@@ -22,32 +22,22 @@ namespace Binaryen
     /// 
     /// <para>A module can also contain a function table for indirect calls, a memory, and a start method.</para>
     /// </remarks>
-    public class Module : IDisposable
+    public class Module : ManualBaseObject
     {
-        private IntPtr handle;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="Module"/> class.
         /// </summary>
-        /// <exception cref="OutOfMemoryException">the module could not be created.</exception>
         public Module()
-        {
-            handle = BinaryenModuleCreate();
-            if (handle == IntPtr.Zero)
-                throw new OutOfMemoryException();
-        }
+            : base(BinaryenModuleCreate())
+        { }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Module"/> class from the specified s-expression.
         /// </summary>
         /// <param name="text">The s-expression.</param>
-        /// <exception cref="OutOfMemoryException">the module could not be created.</exception>
         public Module(string text)
-        {
-            handle = BinaryenModuleParse(text);
-            if (handle == IntPtr.Zero)
-                throw new OutOfMemoryException();
-        }
+            : base(BinaryenModuleParse(text))
+        { }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Module"/> class from the specified binary.
@@ -56,14 +46,8 @@ namespace Binaryen
         /// <exception cref="ArgumentNullException"><paramref name="data"/> is null.</exception>
         /// <exception cref="OutOfMemoryException">the module could not be created.</exception>
         public Module(byte[] data)
-        {
-            if (data == null)
-                throw new ArgumentNullException(nameof(data));
-
-            handle = BinaryenModuleRead(data, (uint)data.Length);
-            if (handle == IntPtr.Zero)
-                throw new OutOfMemoryException();
-        }
+            : base(BinaryenModuleRead(data ?? throw new ArgumentNullException(nameof(data)), (uint)data.Length))
+        { }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Module"/> class from the specified binary.
@@ -72,36 +56,17 @@ namespace Binaryen
         /// <exception cref="ArgumentNullException"><paramref name="data"/> is null.</exception>
         /// <exception cref="OutOfMemoryException">the module could not be created.</exception>
         public Module(Binary binary)
-        {
-            if (binary == null || binary.Bytes == null)
-                throw new ArgumentNullException(nameof(binary));
+            : base(BinaryenModuleRead((binary ?? throw new ArgumentNullException(nameof(binary))).Bytes, (uint)binary.Bytes.Length))
+        { }
 
-            handle = BinaryenModuleRead(binary.Bytes, (uint)binary.Bytes.Length);
-            if (handle == IntPtr.Zero)
-                throw new OutOfMemoryException();
-        }
-
-        ~Module()
+        protected override void Dispose(bool disposing)
         {
-            Dispose(false);
-        }
-
-        /// <summary>
-        /// Releases all resources used by this <see cref="Module"/>.
-        /// </summary>
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        private void Dispose(bool disposing)
-        {
-            if (handle != IntPtr.Zero)
+            if (!IsDisposed)
             {
-                BinaryenModuleDispose(handle);
-                handle = IntPtr.Zero;
+                BinaryenModuleDispose(Handle);
             }
+
+            base.Dispose(disposing);
         }
 
         /// <summary>
@@ -109,7 +74,8 @@ namespace Binaryen
         /// </summary>
         public void Print()
         {
-            if (handle != IntPtr.Zero) BinaryenModulePrint(handle);
+            AssertNotDisposed();
+            BinaryenModulePrint(Handle);
         }
 
         /// <summary>
@@ -117,7 +83,8 @@ namespace Binaryen
         /// </summary>
         public void PrintAsmjs()
         {
-            if (handle != IntPtr.Zero) BinaryenModulePrintAsmjs(handle);
+            AssertNotDisposed();
+            BinaryenModulePrintAsmjs(Handle);
         }
 
         /// <summary>
@@ -126,7 +93,7 @@ namespace Binaryen
         /// <returns><c>true</c> the module is valid; otherwise, <c>false</c>.</returns>
         public bool Validate()
         {
-            return BinaryenModuleValidate(handle) != 0;
+            return BinaryenModuleValidate(Handle) != 0;
         }
 
         /// <summary>
@@ -134,7 +101,8 @@ namespace Binaryen
         /// </summary>
         public void Optimize()
         {
-            BinaryenModuleOptimize(handle);
+            AssertNotDisposed();
+            BinaryenModuleOptimize(Handle);
         }
 
         /// <summary>
@@ -157,7 +125,7 @@ namespace Binaryen
         {
             if (passes != null && passes.Length > 0)
             {
-                BinaryenModuleRunPasses(handle, passes, (uint)passes.Length);
+                BinaryenModuleRunPasses(Handle, passes, (uint)passes.Length);
             }
         }
 
@@ -167,7 +135,7 @@ namespace Binaryen
         /// </summary>
         public void AutoDrop()
         {
-            BinaryenModuleAutoDrop(handle);
+            BinaryenModuleAutoDrop(Handle);
         }
 
         /// <summary>
@@ -175,7 +143,8 @@ namespace Binaryen
         /// </summary>
         public void Interpret()
         {
-            if (handle != IntPtr.Zero) BinaryenModuleInterpret(handle);
+            AssertNotDisposed();
+            BinaryenModuleInterpret(Handle);
         }
 
         /// <summary>
@@ -196,7 +165,7 @@ namespace Binaryen
 
             // TODO: We need some way to free the allocation so we don't get a memory leak.
             /*
-            var result = BinaryenModuleAllocateAndWrite(handle, sourceMapUrl);
+            var result = BinaryenModuleAllocateAndWrite(Handle, sourceMapUrl);
 
             var bytes = new byte[result.BinaryBytes];
             Marshal.Copy(result.Binary, bytes, 0, (int)result.BinaryBytes);
@@ -214,7 +183,7 @@ namespace Binaryen
         /// <returns>The index of the file name.</returns>
         public uint AddDebugInfoFileName(string filename)
         {
-            return BinaryenModuleAddDebugInfoFileName(handle, filename);
+            return BinaryenModuleAddDebugInfoFileName(Handle, filename);
         }
 
         /// <summary>
@@ -222,7 +191,7 @@ namespace Binaryen
         /// </summary>
         public string GetDebugFileName(uint index)
         {
-            return Marshal.PtrToStringAnsi(BinaryenModuleGetDebugInfoFileName(handle, index));
+            return Marshal.PtrToStringAnsi(BinaryenModuleGetDebugInfoFileName(Handle, index));
         }
 
         /// <summary>
@@ -294,11 +263,11 @@ namespace Binaryen
 
             if (parameters == null)
             {
-                signatureRef = BinaryenAddFunctionType(handle, name, result, null, 0u);
+                signatureRef = BinaryenAddFunctionType(Handle, name, result, null, 0u);
             }
             else
             {
-                signatureRef = BinaryenAddFunctionType(handle, name, result, parameters, (uint)parameters.Length);
+                signatureRef = BinaryenAddFunctionType(Handle, name, result, parameters, (uint)parameters.Length);
             }
 
             if (signatureRef == IntPtr.Zero)
@@ -318,7 +287,7 @@ namespace Binaryen
         /// If there is no such type, returns <c>null</c>.</returns>
         public Signature GetFunctionTypeBySignature(ValueType result, ValueType[] parameters)
         {
-            var sig = BinaryenGetFunctionTypeBySignature(handle, result, parameters, (uint)parameters.Length);
+            var sig = BinaryenGetFunctionTypeBySignature(Handle, result, parameters, (uint)parameters.Length);
             return sig == IntPtr.Zero ? null : new Signature(sig);
         }
 
@@ -375,11 +344,11 @@ namespace Binaryen
 
             if (varTypes == null)
             {
-                funcRef = BinaryenAddFunction(handle, name, signature.Handle, null, 0u, body.Handle);
+                funcRef = BinaryenAddFunction(Handle, name, signature.Handle, null, 0u, body.Handle);
             }
             else
             {
-                funcRef = BinaryenAddFunction(handle, name, signature.Handle, varTypes, (uint)varTypes.Length, body.Handle);
+                funcRef = BinaryenAddFunction(Handle, name, signature.Handle, varTypes, (uint)varTypes.Length, body.Handle);
             }
 
             if (funcRef == IntPtr.Zero)
@@ -395,7 +364,7 @@ namespace Binaryen
         /// <returns>A <see cref="Function"/> instance. If there is not such function, returns <c>null</c>.</returns>
         public Function GetFunction(string name)
         {
-            var ptr = BinaryenGetFunction(handle, name);
+            var ptr = BinaryenGetFunction(Handle, name);
             if (ptr == IntPtr.Zero)
                 return null;
             else
@@ -408,7 +377,7 @@ namespace Binaryen
         /// <param name="name">The name of the function.</param>
         public void RemoveFunction(string name)
         {
-            BinaryenRemoveFunction(handle, name);
+            BinaryenRemoveFunction(Handle, name);
         }
 
         /// <summary>
@@ -448,7 +417,7 @@ namespace Binaryen
             if (signature == null)
                 throw new ArgumentNullException(nameof(signature));
 
-            var importRef = BinaryenAddFunctionImport(handle, name, externalModuleName, externalBaseName, signature.Handle);
+            var importRef = BinaryenAddFunctionImport(Handle, name, externalModuleName, externalBaseName, signature.Handle);
             if (importRef == IntPtr.Zero)
                 throw new OutOfMemoryException();
 
@@ -475,7 +444,7 @@ namespace Binaryen
             if (externalBaseName == null)
                 throw new ArgumentNullException(nameof(externalBaseName));
 
-            var importRef = BinaryenAddTableImport(handle, name, externalModuleName, externalBaseName);
+            var importRef = BinaryenAddTableImport(Handle, name, externalModuleName, externalBaseName);
             if (importRef == IntPtr.Zero)
                 throw new OutOfMemoryException();
 
@@ -502,7 +471,7 @@ namespace Binaryen
             if (externalBaseName == null)
                 throw new ArgumentNullException(nameof(externalBaseName));
 
-            var importRef = BinaryenAddMemoryImport(handle, name, externalModuleName, externalBaseName);
+            var importRef = BinaryenAddMemoryImport(Handle, name, externalModuleName, externalBaseName);
             if (importRef == IntPtr.Zero)
                 throw new OutOfMemoryException();
 
@@ -530,7 +499,7 @@ namespace Binaryen
             if (externalBaseName == null)
                 throw new ArgumentNullException(nameof(externalBaseName));
 
-            var importRef = BinaryenAddGlobalImport(handle, name, externalModuleName, externalModuleName, globalType);
+            var importRef = BinaryenAddGlobalImport(Handle, name, externalModuleName, externalModuleName, globalType);
             if (importRef == IntPtr.Zero)
                 throw new OutOfMemoryException();
 
@@ -544,7 +513,7 @@ namespace Binaryen
         /// <exception cref="ArgumentNullException"><paramref name="name"/> is null.</exception>
         public void RemoveImport(string name)
         {
-            BinaryenRemoveImport(handle, name ?? throw new ArgumentNullException(nameof(name)));
+            BinaryenRemoveImport(Handle, name ?? throw new ArgumentNullException(nameof(name)));
         }
 
         /// <summary>
@@ -574,7 +543,7 @@ namespace Binaryen
             if (name == null || externalName == null)
                 throw new ArgumentNullException(name == null ? nameof(name) : nameof(externalName));
 
-            var exportRef = BinaryenAddFunctionExport(handle, name, externalName);
+            var exportRef = BinaryenAddFunctionExport(Handle, name, externalName);
             if (exportRef == IntPtr.Zero)
                 throw new OutOfMemoryException();
 
@@ -594,7 +563,7 @@ namespace Binaryen
             if (name == null || externalName == null)
                 throw new ArgumentNullException(name == null ? nameof(name) : nameof(externalName));
 
-            var exportRef = BinaryenAddTableExport(handle, name, externalName);
+            var exportRef = BinaryenAddTableExport(Handle, name, externalName);
             if (exportRef == IntPtr.Zero)
                 throw new OutOfMemoryException();
 
@@ -614,7 +583,7 @@ namespace Binaryen
             if (name == null || externalName == null)
                 throw new ArgumentNullException(name == null ? nameof(name) : nameof(externalName));
 
-            var exportRef = BinaryenAddMemoryExport(handle, name, externalName);
+            var exportRef = BinaryenAddMemoryExport(Handle, name, externalName);
             if (exportRef == IntPtr.Zero)
                 throw new OutOfMemoryException();
 
@@ -634,7 +603,7 @@ namespace Binaryen
             if (name == null || externalName == null)
                 throw new ArgumentNullException(name == null ? nameof(name) : nameof(externalName));
 
-            var exportRef = BinaryenAddGlobalExport(handle, name, externalName);
+            var exportRef = BinaryenAddGlobalExport(Handle, name, externalName);
             if (exportRef == IntPtr.Zero)
                 throw new OutOfMemoryException();
 
@@ -647,7 +616,7 @@ namespace Binaryen
         /// <param name="externalName">The external name of the export to remove.</param>
         public void RemoveExport(string externalName)
         {
-            BinaryenRemoveExport(handle, externalName);
+            BinaryenRemoveExport(Handle, externalName);
         }
 
         /// <summary>
@@ -659,7 +628,7 @@ namespace Binaryen
         /// <param name="init">The initial value expression.</param>
         public Global AddGlobal(string name, ValueType type, bool mutable, Expression init)
         {
-            var globalRef = BinaryenAddGlobal(handle, name, type, (sbyte)(mutable ? 1 : 0), init.Handle);
+            var globalRef = BinaryenAddGlobal(Handle, name, type, (sbyte)(mutable ? 1 : 0), init.Handle);
             if (globalRef == IntPtr.Zero)
                 throw new OutOfMemoryException();
 
@@ -693,7 +662,7 @@ namespace Binaryen
             if (functions == null)
                 throw new ArgumentNullException(nameof(functions));
 
-            BinaryenSetFunctionTable(handle, functions.Select(x => x.Handle).ToArray(), (uint)functions.Length);
+            BinaryenSetFunctionTable(Handle, functions.Select(x => x.Handle).ToArray(), (uint)functions.Length);
         }
 
         /// <summary>
@@ -722,7 +691,7 @@ namespace Binaryen
             var segmentOffsets = segments.Select(x => x.Offset.Handle).ToArray();
             var segmentSizes = segments.Select(x => x.Size).ToArray();
 
-            BinaryenSetMemory(handle, initial, maximum, exportName, segmentData, segmentOffsets, segmentSizes, (uint)segments.Length);
+            BinaryenSetMemory(Handle, initial, maximum, exportName, segmentData, segmentOffsets, segmentSizes, (uint)segments.Length);
         }
 
         /// <summary>
@@ -735,7 +704,7 @@ namespace Binaryen
             if (start == null)
                 throw new ArgumentNullException(nameof(start));
 
-            BinaryenSetStart(handle, start.Handle);
+            BinaryenSetStart(Handle, start.Handle);
         }
 
         /// <summary>
@@ -746,7 +715,7 @@ namespace Binaryen
         /// <exception cref="OutOfMemoryException">the expression could not be created.</exception>
         public Expression Block(ValueType type = ValueType.Auto)
         {
-            var blockRef = BinaryenBlock(handle, null, null, 0u, type);
+            var blockRef = BinaryenBlock(Handle, null, null, 0u, type);
             if (blockRef == IntPtr.Zero)
                 throw new OutOfMemoryException();
 
@@ -782,11 +751,11 @@ namespace Binaryen
             {
                 var childrenHandles = children.Select(x => x.Handle).ToArray();
 
-                blockRef = BinaryenBlock(handle, label, childrenHandles, (uint)childrenHandles.Length, type);
+                blockRef = BinaryenBlock(Handle, label, childrenHandles, (uint)childrenHandles.Length, type);
             }
             else
             {
-                blockRef = BinaryenBlock(handle, label, null, 0u, type);
+                blockRef = BinaryenBlock(Handle, label, null, 0u, type);
             }
 
             if (blockRef == IntPtr.Zero)
@@ -807,7 +776,7 @@ namespace Binaryen
             var ifTrueHandle = ifTrue.Handle;
             var ifFalseHandle = ifFalse == null ? IntPtr.Zero : ifFalse.Handle;
 
-            var @if = BinaryenIf(handle, conditionHandle, ifTrueHandle, ifFalseHandle);
+            var @if = BinaryenIf(Handle, conditionHandle, ifTrueHandle, ifFalseHandle);
             if (@if == IntPtr.Zero)
                 throw new OutOfMemoryException();
 
@@ -839,7 +808,7 @@ namespace Binaryen
             if (body == null)
                 throw new ArgumentNullException(nameof(body));
 
-            var loop = BinaryenLoop(handle, label, body.Handle);
+            var loop = BinaryenLoop(Handle, label, body.Handle);
             if (loop == IntPtr.Zero)
                 throw new OutOfMemoryException();
 
@@ -852,7 +821,7 @@ namespace Binaryen
             if (label == null)
                 throw new ArgumentNullException(nameof(label));
 
-            var @break = BinaryenBreak(handle, label, condition == null ? IntPtr.Zero : condition.Handle,
+            var @break = BinaryenBreak(Handle, label, condition == null ? IntPtr.Zero : condition.Handle,
                 value == null ? IntPtr.Zero : value.Handle);
             if (@break == IntPtr.Zero)
                 throw new OutOfMemoryException();
@@ -866,7 +835,7 @@ namespace Binaryen
             if (condition == null)
                 throw new ArgumentNullException(nameof(condition));
 
-            var @switch = BinaryenSwitch(handle, labels, (uint)labels.Length, defaultLabel, condition.Handle,
+            var @switch = BinaryenSwitch(Handle, labels, (uint)labels.Length, defaultLabel, condition.Handle,
                 value == null ? IntPtr.Zero : value.Handle);
             if (@switch == IntPtr.Zero)
                 throw new OutOfMemoryException();
@@ -878,7 +847,7 @@ namespace Binaryen
         {
             var operandHandles = operands.Select(x => x.Handle).ToArray();
 
-            var call = BinaryenCall(handle, target, operandHandles, (uint)operandHandles.Length, returnType);
+            var call = BinaryenCall(Handle, target, operandHandles, (uint)operandHandles.Length, returnType);
             if (call == IntPtr.Zero)
                 throw new OutOfMemoryException();
 
@@ -889,7 +858,7 @@ namespace Binaryen
         {
             var operandHandles = operands.Select(x => x.Handle).ToArray();
 
-            var call = BinaryenCallImport(handle, target, operandHandles, (uint)operandHandles.Length, returnType);
+            var call = BinaryenCallImport(Handle, target, operandHandles, (uint)operandHandles.Length, returnType);
             if (call == IntPtr.Zero)
                 throw new OutOfMemoryException();
 
@@ -912,11 +881,11 @@ namespace Binaryen
             {
                 var operandHandles = operands.Select(x => x.Handle).ToArray();
 
-                callRef = BinaryenCallIndirect(handle, target.Handle, operandHandles, (uint)operandHandles.Length, type);
+                callRef = BinaryenCallIndirect(Handle, target.Handle, operandHandles, (uint)operandHandles.Length, type);
             }
             else
             {
-                callRef = BinaryenCallIndirect(handle, target.Handle, null, 0u, type);
+                callRef = BinaryenCallIndirect(Handle, target.Handle, null, 0u, type);
             }
 
             if (callRef == IntPtr.Zero)
@@ -934,7 +903,7 @@ namespace Binaryen
         /// <exception cref="OutOfMemoryException">the expression could not be created.</exception>
         public Expression GetLocal(uint index, ValueType type)
         {
-            var expr = BinaryenGetLocal(handle, index, type);
+            var expr = BinaryenGetLocal(Handle, index, type);
             if (expr == IntPtr.Zero)
                 throw new OutOfMemoryException();
 
@@ -954,7 +923,7 @@ namespace Binaryen
             if (value == null)
                 throw new ArgumentNullException(nameof(value));
 
-            var expr = BinaryenSetLocal(handle, index, value.Handle);
+            var expr = BinaryenSetLocal(Handle, index, value.Handle);
             if (expr == IntPtr.Zero)
                 throw new OutOfMemoryException();
 
@@ -966,7 +935,7 @@ namespace Binaryen
             if (value == null)
                 throw new ArgumentNullException(nameof(value));
 
-            var expr = BinaryenTeeLocal(handle, index, value.Handle);
+            var expr = BinaryenTeeLocal(Handle, index, value.Handle);
             if (expr == IntPtr.Zero)
                 throw new OutOfMemoryException();
 
@@ -978,7 +947,7 @@ namespace Binaryen
             if (name == null)
                 throw new ArgumentNullException(nameof(name));
 
-            var expr = BinaryenGetGlobal(handle, name, type);
+            var expr = BinaryenGetGlobal(Handle, name, type);
             if (expr == IntPtr.Zero)
                 throw new OutOfMemoryException();
 
@@ -990,7 +959,7 @@ namespace Binaryen
             if (value == null || name == null)
                 throw new ArgumentNullException(value == null ? nameof(value) : nameof(name));
 
-            var expr = BinaryenSetGlobal(handle, name, value.Handle);
+            var expr = BinaryenSetGlobal(Handle, name, value.Handle);
             if (expr == IntPtr.Zero)
                 throw new OutOfMemoryException();
 
@@ -1007,7 +976,7 @@ namespace Binaryen
             if (ptr == null)
                 throw new ArgumentNullException(nameof(ptr));
 
-            var load = BinaryenLoad(handle, bytes, (sbyte)(signed ? 1 : 0), offset, align, type, ptr.Handle);
+            var load = BinaryenLoad(Handle, bytes, (sbyte)(signed ? 1 : 0), offset, align, type, ptr.Handle);
             if (load == IntPtr.Zero)
                 throw new OutOfMemoryException();
 
@@ -1024,7 +993,7 @@ namespace Binaryen
             if (ptr == null || value == null)
                 throw new ArgumentNullException(ptr == null ? nameof(ptr) : nameof(value));
 
-            var expr = BinaryenStore(handle, bytes, offset, align, ptr.Handle, value.Handle, type);
+            var expr = BinaryenStore(Handle, bytes, offset, align, ptr.Handle, value.Handle, type);
             if (expr == IntPtr.Zero)
                 throw new OutOfMemoryException();
 
@@ -1053,7 +1022,7 @@ namespace Binaryen
 
         public Expression Const(Literal value)
         {
-            var expr = BinaryenConst(handle, value);
+            var expr = BinaryenConst(Handle, value);
             if (expr == IntPtr.Zero)
                 throw new OutOfMemoryException();
 
@@ -1065,7 +1034,7 @@ namespace Binaryen
             if (value == null)
                 throw new ArgumentNullException(nameof(value));
 
-            var expr = BinaryenUnary(handle, op, value.Handle);
+            var expr = BinaryenUnary(Handle, op, value.Handle);
             if (expr == IntPtr.Zero)
                 throw new OutOfMemoryException();
 
@@ -1077,7 +1046,7 @@ namespace Binaryen
             if (left == null || right == null)
                 throw new ArgumentNullException(left == null ? nameof(left) : nameof(right));
 
-            var expr = BinaryenBinary(handle, op, left.Handle, right.Handle);
+            var expr = BinaryenBinary(Handle, op, left.Handle, right.Handle);
             if (expr == IntPtr.Zero)
                 throw new OutOfMemoryException();
 
@@ -1095,7 +1064,7 @@ namespace Binaryen
             if (ifFalse == null)
                 throw new ArgumentNullException(nameof(ifFalse));
 
-            var expr = BinaryenSelect(handle, condition.Handle, ifTrue.Handle, ifFalse.Handle);
+            var expr = BinaryenSelect(Handle, condition.Handle, ifTrue.Handle, ifFalse.Handle);
             if (expr == IntPtr.Zero)
                 throw new OutOfMemoryException();
 
@@ -1114,7 +1083,7 @@ namespace Binaryen
             if (value == null)
                 throw new ArgumentNullException();
 
-            var expr = BinaryenDrop(handle, value.Handle);
+            var expr = BinaryenDrop(Handle, value.Handle);
             if (expr == IntPtr.Zero)
                 throw new OutOfMemoryException();
 
@@ -1129,7 +1098,7 @@ namespace Binaryen
         /// <exception cref="OutOfMemoryException">the expression could not be created.</exception>
         public Expression Return(Expression value = null)
         {
-            var expr = BinaryenReturn(handle, value == null ? IntPtr.Zero : value.Handle);
+            var expr = BinaryenReturn(Handle, value == null ? IntPtr.Zero : value.Handle);
             if (expr == null)
                 throw new OutOfMemoryException();
 
@@ -1141,7 +1110,7 @@ namespace Binaryen
             // name can be NULL
             var operandHandles = operands.Select(x => x.Handle).ToArray();
 
-            var host = BinaryenHost(handle, op, name, operandHandles, (uint)operandHandles.Length);
+            var host = BinaryenHost(Handle, op, name, operandHandles, (uint)operandHandles.Length);
             if (host == IntPtr.Zero)
                 throw new OutOfMemoryException();
 
@@ -1155,7 +1124,7 @@ namespace Binaryen
         /// <exception cref="OutOfMemoryException">the expression could not be created.</exception>
         public Expression Nop()
         {
-            var expr = BinaryenNop(handle);
+            var expr = BinaryenNop(Handle);
             if (expr == IntPtr.Zero)
                 throw new OutOfMemoryException();
 
@@ -1169,7 +1138,7 @@ namespace Binaryen
         /// <exception cref="OutOfMemoryException">the expression could not be created.</exception>
         public Expression Unreachable()
         {
-            var expr = BinaryenUnreachable(handle);
+            var expr = BinaryenUnreachable(Handle);
             if (expr == IntPtr.Zero)
                 throw new OutOfMemoryException();
 
@@ -1181,7 +1150,7 @@ namespace Binaryen
             if (ptr == null)
                 throw new ArgumentNullException(nameof(ptr));
 
-            var expr = BinaryenAtomicLoad(handle, bytes, offset, type, ptr.Handle);
+            var expr = BinaryenAtomicLoad(Handle, bytes, offset, type, ptr.Handle);
             if (expr == IntPtr.Zero)
                 throw new OutOfMemoryException();
 
@@ -1193,7 +1162,7 @@ namespace Binaryen
             if (ptr == null || value == null)
                 throw new ArgumentNullException(ptr == null ? nameof(ptr) : nameof(value));
 
-            var expr = BinaryenAtomicStore(handle, bytes, offset, ptr.Handle, value.Handle, type);
+            var expr = BinaryenAtomicStore(Handle, bytes, offset, ptr.Handle, value.Handle, type);
             if (expr == IntPtr.Zero)
                 throw new OutOfMemoryException();
 
@@ -1205,7 +1174,7 @@ namespace Binaryen
             if (ptr == null || value == null)
                 throw new ArgumentNullException(ptr == null ? nameof(ptr) : nameof(value));
 
-            var expr = BinaryenAtomicRMW(handle, op, bytes, offset, ptr.Handle, value.Handle, type);
+            var expr = BinaryenAtomicRMW(Handle, op, bytes, offset, ptr.Handle, value.Handle, type);
             if (expr == IntPtr.Zero)
                 throw new OutOfMemoryException();
 
@@ -1223,7 +1192,7 @@ namespace Binaryen
             if (replacement == null)
                 throw new ArgumentNullException(nameof(replacement));
 
-            var expr = BinaryenAtomicCmpxchg(handle, bytes, offset, ptr.Handle, expected.Handle, replacement.Handle, type);
+            var expr = BinaryenAtomicCmpxchg(Handle, bytes, offset, ptr.Handle, expected.Handle, replacement.Handle, type);
             if (expr == IntPtr.Zero)
                 throw new OutOfMemoryException();
 
@@ -1241,7 +1210,7 @@ namespace Binaryen
             if (timeout == null)
                 throw new ArgumentNullException(nameof(timeout));
 
-            var expr = BinaryenAtomicWait(handle, ptr.Handle, expected.Handle, timeout.Handle, type);
+            var expr = BinaryenAtomicWait(Handle, ptr.Handle, expected.Handle, timeout.Handle, type);
             if (expr == IntPtr.Zero)
                 throw new OutOfMemoryException();
 
@@ -1253,7 +1222,7 @@ namespace Binaryen
             if (ptr == null || wakeCount == null)
                 throw new ArgumentNullException(ptr == null ? nameof(ptr) : nameof(wakeCount));
 
-            var expr = BinaryenAtomicWake(handle, ptr.Handle, wakeCount.Handle);
+            var expr = BinaryenAtomicWake(Handle, ptr.Handle, wakeCount.Handle);
             if (expr == IntPtr.Zero)
                 throw new OutOfMemoryException();
 
@@ -1286,11 +1255,6 @@ namespace Binaryen
             get => BinaryenGetDebugInfo() != 0;
             set => BinaryenSetDebugInfo(value ? 1 : 0);
         }
-
-        /// <summary>
-        /// Gets the handle of the module.
-        /// </summary>
-        internal IntPtr Handle => handle;
 
         #region Imports
 
