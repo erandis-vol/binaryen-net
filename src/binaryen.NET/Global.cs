@@ -9,11 +9,6 @@ namespace Binaryen
     /// </summary>
     public class Global : AutomaticBaseObject
     {
-        private string name;
-        private ValueType type;
-        private bool mutable;
-        private Expression init;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="Global"/> class for the specified handle.
         /// </summary>
@@ -35,30 +30,30 @@ namespace Binaryen
         public Global(string name, ValueType type, bool mutable, Expression init)
             : base(IntPtr.Zero)
         {
-            this.name = name;
-            this.type = type;
-            this.mutable = mutable;
-            this.init = init;
+            Name = name;
+            Type = type;
+            IsMutable = mutable;
+            InitialValue = init;
         }
 
         /// <summary>
         /// Gets the name of the global.
         /// </summary>
-        public string Name => name;
+        public string Name { get; }
 
         /// <summary>
         /// Gets the type of the global.
         /// </summary>
-        public ValueType Type => type;
+        public ValueType Type { get; }
 
         /// <summary>
-        /// Gets whether the global is mutable.
+        /// Determines whether the global is mutable.
         /// </summary>
-        public bool IsMutable => mutable;
+        public bool IsMutable { get; }
 
         /// <summary>
         /// Gets the initial value expression of the global.
         /// </summary>
-        public Expression InitialValue => init;
+        public Expression InitialValue { get; }
     }
 }

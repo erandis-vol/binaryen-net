@@ -5,9 +5,6 @@
     /// </summary>
     public class Binary
     {
-        private byte[] bytes;
-        private string sourceMap;
-
         /// <summary>
         /// Initialies a new instance of the <see cref="Binary"/> class.
         /// </summary>
@@ -15,18 +12,18 @@
         /// <param name="sourceMap">The source map.</param>
         public Binary(byte[] bytes, string sourceMap = null)
         {
-            this.bytes = bytes;
-            this.sourceMap = sourceMap;
+            Bytes = bytes;
+            SourceMap = sourceMap;
         }
 
         /// <summary>
         /// Gets the binary data.
         /// </summary>
-        public byte[] Bytes => bytes;
+        public byte[] Bytes { get; }
 
         /// <summary>
         /// Gets the binary source map.
         /// </summary>
-        public string SourceMap => sourceMap;
+        public string SourceMap { get; }
     }
 }

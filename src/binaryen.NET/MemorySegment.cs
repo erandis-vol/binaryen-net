@@ -10,9 +10,6 @@ namespace Binaryen
     /// </summary>
     public class MemorySegment
     {
-        private byte[] data;
-        private Expression offset;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="MemorySegment"/> class.
         /// </summary>
@@ -37,8 +34,8 @@ namespace Binaryen
             if (encoding == null)
                 encoding = Encoding.Default;
 
-            this.data = encoding.GetBytes(data);
-            this.offset = offset;
+            Data = encoding.GetBytes(data);
+            Offset = offset;
         }
 
         /// <summary>
@@ -52,8 +49,8 @@ namespace Binaryen
             if (data == null || offset == null)
                 throw new ArgumentNullException(data == null ? nameof(data) : nameof(offset));
 
-            this.data = data.ToArray();
-            this.offset = offset;
+            Data = data.ToArray();
+            Offset = offset;
         }
 
         /// <summary>
@@ -67,23 +64,23 @@ namespace Binaryen
             if (data == null || offset == null)
                 throw new ArgumentNullException(data == null ? nameof(data) : nameof(offset));
 
-            this.data = data;
-            this.offset = offset;
+            Data = data;
+            Offset = offset;
         }
 
         /// <summary>
         /// The data of the memory.
         /// </summary>
-        public byte[] Data => data;
+        public byte[] Data { get; }
 
         /// <summary>
         /// The offset of the memory.
         /// </summary>
-        public Expression Offset => offset;
+        public Expression Offset { get; }
 
         /// <summary>
-        /// The size of the memory.
+        /// The size of the memory in bytes.
         /// </summary>
-        public uint Size => (uint)data.Length;
+        public uint Size => (uint)Data.Length;
     }
 }
