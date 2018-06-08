@@ -161,10 +161,9 @@ namespace Binaryen
         /// <param name="sourceMapUrl">The source map.</param>
         public Binary Emit(string sourceMapUrl)
         {
-            throw new NotSupportedException();
+            AssertNotDisposed();
 
-            // TODO: We need some way to free the allocation so we don't get a memory leak.
-            /*
+            // TODO: Memory leak?
             var result = BinaryenModuleAllocateAndWrite(Handle, sourceMapUrl);
 
             var bytes = new byte[result.BinaryBytes];
@@ -173,7 +172,6 @@ namespace Binaryen
             var sourceMap = sourceMapUrl != null ? Marshal.PtrToStringAnsi(result.SourceMap) : null;
 
             return new Binary(bytes, sourceMap);
-            */
         }
 
         /// <summary>
